@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css?family=Oswald|Roboto+Condensed');
+HTML {
+	position:relative;
+	min-height:100%;
+}
+BODY {
+	background-color: #EFEFEF;
+	color: #333;
+	height:100%;
+	font-family:'Roboto Condensed', sans-serif;
+}
+BODY.training {
+	background-color: #000;
+}
+H1, H2, H3 {
+	font-family:'Oswald', sans-serif;
+}
+.countdown {
+	text-transform:uppercase;
+	font-size: 5rem;
+	color:#FFF;
+	font-family:'Oswald', sans-serif;
+}
+/*
+	Card
+*/
+.card {
+	color:#000;
+	border: #5E330D;
+}
+.card-header {
+	background-color:#000;
+	color:#FFF;
+}
+.card-title {
+	font-size:1.5rem;
+	margin: 0;
+}
+/*
+	Footer
+*/
+FOOTER {
+	width: 100%;
+	padding: 20px;
+	margin-top: 20px;
+	background-color: #000;
+	color: #CCC;
+}
+@media (min-width: 996px) {
+	BODY:not(.training) {
+		padding-bottom: 120px;
+	}
+	FOOTER {
+		position: absolute;
+		bottom: 0;
+	}
+}
+FOOTER A {
+	color: #FFF;
+}
+FOOTER .contacts A {
+	padding-left: 20px;
+}
+BODY.training FOOTER {
+	display: none;
+}
+/*
+	Combo
+*/
+.combo {
+	background-size:cover;
+}
+.combo IMG  {
+	height:100%;
+	width:auto;
+	position: absolute;
+}
+.combo-text {
+	position:absolute;
+	bottom:0;
+	left:0;
+	font-size:1.5rem;
+	color:#FFF;
+	background-color: rgba(0, 0, 0, 0.5);
+	width:100%;
+}
+/*
+	Placeholder
+*/
+::-webkit-input-placeholder {
+  color: #AAA !important;
+  opacity:1;
+}
+::-moz-placeholder {
+  color: #AAA !important;
+  opacity:1;
+}
+:-ms-input-placeholder {
+  color: #AAA !important;
+  opacity:1;
+}
+::placeholder {
+  color: #AAA !important;
+  opacity:1;
+}
+.alert.alert-info {
+	background-color:#222;
+	color:#DDD;
+	border-style: none;
+}
