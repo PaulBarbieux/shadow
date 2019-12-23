@@ -20,5 +20,11 @@ if (!is_dir($_SERVER['DOCUMENT_ROOT'].IMAGES_FOLDER)) {
 	Use a site like http://www.passwordtool.hu/php5-password-hash-generator to encrypt your password.
 */
 define ('KIDA', '$2y$10$LFaRHnQvRZS9qupPeP.qdOA7mIlC5fMdgHwlSDFT5EUeS7mrN6OSK');
-
+/*
+	META description and keywords
+*/
+define ('SITE_DESCRIPTION_FR', "Entraînement de Krav Maga");
+define ('SITE_DESCRIPTION_EN', "Training for Krav Maga");
+define ('SITE_KEYWORDS_FR', "krav maga, shadow boxing");
+define ('SITE_KEYWORDS_EN', "krav maga, shadow boxing");
 ?>
