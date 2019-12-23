@@ -1,4 +1,4 @@
-content/
-*.db
+content/*.db
+content/img-attacks/
 *.mno
 _notes/
