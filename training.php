@@ -1,4 +1,4 @@
-<?php require $_SERVER['DOCUMENT_ROOT']."/shadow/content/config.php"; ?>
+<?php require "content/config.php"; ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
