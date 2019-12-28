@@ -1,12 +1,13 @@
 <?php require "content/config.php"; ?>
+<?php require "includes/init.php"; ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= LG ?>">
 <head>
 <!-- Required meta tags -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="<?= SITE_DESCRIPTION_FR ?>"/>
-<meta name="keywords" content="<?= SITE_KEYWORDS_FR ?>"/>
+<meta name="description" content="<?= LG == "fr" ? SITE_DESCRIPTION_FR : SITE_DESCRIPTION_EN ?>"/>
+<meta name="keywords" content="<?= LG == "fr" ? SITE_KEYWORDS_FR : SITE_KEYWORDS_EN ?>"/>
 <link rel="shortcut icon" href="favicon.ico">
 <title>Shadow Training</title>
 <link rel="stylesheet" href="css/bootstrap.min.css"/>
@@ -26,6 +27,8 @@ $rows = executeSql("SELECT * FROM combos ORDER BY id");
 $combos = array();
 while ($row = $rows->fetch()) {
 	$combos[$row['id']] = $row;
+	$combos[$row['id']]['action'] = $row['action_'.LG];
+	$combos[$row['id']]['response'] = $row['response_'.LG];
 }
 /*
 	Get trainongs
@@ -39,7 +42,7 @@ while ($row = $rows->fetch()) {
 	} else {
 		// New training
 		$trainings[$row['training_id']] = array(
-			'title_fr' => $row['title_fr'],
+			'title' => $row['title_'.LG],
 			'combos' => array($row['combo_id'] => $row['combo_id'])
 		);
 	}
@@ -75,7 +78,7 @@ if (isset($_POST['start'])) {
 	}
 	if (count($values['trainings']) == 0) {
 		$error = true;
-		$message = "Veuillez choisir au moins un entraînement";
+		$message =  FR ? "Veuillez choisir au moins un entraînement." : "Please select at least one training.";
 		$action = "error";
 	}
 }
@@ -97,48 +100,61 @@ if (isset($_POST['start'])) {
 			<DIV class="col-md-6">
 				<DIV class="card">
 					<DIV class="card-header">
-						<H1 class="card-title">Paramètres</H1>
+						<H1 class="card-title"><?php if (FR) { ?>Paramètres<?php } else { ?>Parameters<?php } ?></H1>
 					</DIV>
 					<DIV class="card-body">
 						<DIV class="form-group row">
 							<DIV class="col-12">
 								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="training_type" value="random" <?php if ($values['training_type'] == "random") echo "checked" ?> > Actions aléatoires</LABEL>
+								  <LABEL><input class="form-check-input" type="radio" name="training_type" value="random" <?php if ($values['training_type'] == "random") echo "checked" ?> >
+								  <?php if (FR) { ?>Actions aléatoires.<?php } else { ?>Random actions<?php } ?></LABEL>
 								</div>
 								<div class="form-check form-check-inline">
-								  <SMALL class="form-text text-muted">Les actions d'un entraînement s'enchaînent au hasard.</SMALL>
+								  <SMALL class="form-text text-muted">
+								  	<?php if (FR) { ?>Les actions d'un entraînement s'enchaînent au hasard.<?php } else { ?>
+									Actions of the training are in random sequence.<?php } ?>
+								  </SMALL>
 								</div>
 							</DIV>
 							<DIV class="col-12">
 								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="training_type" value="repeat" <?php if ($values['training_type'] == "repeat") echo "checked" ?> > Répétition de chaque action</LABEL>
+								  <LABEL><input class="form-check-input" type="radio" name="training_type" value="repeat" <?php if ($values['training_type'] == "repeat") echo "checked" ?> > 
+								  	<?php if (FR) { ?>Répétition de chaque action<?php } else { ?>Repetition of each action<?php } ?></LABEL>
 								</div>
 								<div class="form-check form-check-inline">
-								  <SMALL class="form-text text-muted">Chaque action d'un entraînement est répétée avant de passer à la suivante.</SMALL>
+								  <SMALL class="form-text text-muted">
+								  	<?php if (FR) { ?>Chaque action d'un entraînement est répétée avant de passer à la suivante.<?php } else { ?>Each action of the training is repeated before the next.<?php } ?></SMALL>
 								</div>
 							</DIV>
-							
 						</DIV>
 						<DIV class="form-group row">
 							<LABEL for="attacks_qty" class="col-sm-8 col-form-label">
-								<SPAN class="info_qty info_qty_random">Nombre d'actions à enchaîner</SPAN>
-								<SPAN class="info_qty info_qty_repeat">Nombre de répétitions pour chaque mouvement</SPAN>
+								<SPAN class="info_qty info_qty_random">
+									<?php if (FR) { ?>Nombre d'actions à enchaîner<?php } else { ?>Number of actions to chain<?php } ?></SPAN>
+								<SPAN class="info_qty info_qty_repeat">
+									<?php if (FR) { ?>Nombre de répétitions pour chaque mouvement<?php } else { ?>Number of repetitions for each movement<?php } ?></SPAN>
 							</LABEL>
 							<DIV class="col-sm-4">
 								<INPUT name="attacks_qty" type="number" class="form-control" required value="<?= $values['attacks_qty'] ?>">
 							</DIV>
 							<SMALL class="form-text text-muted col-sm-12">
-								<SPAN class="info_qty info_qty_random">Nombre d'actions qui s'enchaîneront pour votre entraînement.</SPAN>
-								<SPAN class="info_qty info_qty_repeat">Nombre de répétitions de chaque action de l'entraînement.</SPAN>
-								<br>Vous pourrez l'interrompre n'importe quand avec la barre d'espacement de votre clavier ou en cliquant sur l'image.
+								<SPAN class="info_qty info_qty_random">
+									<?php if (FR) { ?>Nombre d'actions qui s'enchaîneront pour votre entraînement.<?php } else { ?>
+									Number of actions that will appear for your training.<?php } ?></SPAN>
+								<SPAN class="info_qty info_qty_repeat">
+									<?php if (FR) { ?>Nombre de répétitions de chaque action de l'entraînement.<?php } else { ?>
+									Number of repetitions of each action of the training.<?php } ?></SPAN>
+								<br>
+								<?php if (FR) { ?>Vous pourrez l'interrompre n'importe quand avec la barre d'espacement de votre clavier ou en cliquant sur l'image.<?php } else { ?>
+								You can interrupt it at any time with the space bar of the keyboard or by clicking on the image.<?php } ?>
 							</SMALL>
 						</DIV>
 						<HR>
 						<DIV class="form-group row">
-							<LABEL for="standby_wait" class="col-sm-8 col-form-label">Temps de pause</LABEL>
+							<LABEL for="standby_wait" class="col-sm-8 col-form-label"><?php if (FR) { ?>Temps de pause<?php } else { ?>Break time<?php } ?></LABEL>
 							<DIV class="col-sm-4">
 								<SELECT name="standby_wait" class="form-control">
-									<OPTION value="0" <?php if ($values['standby_wait'] == 0) echo "selected" ?>>0 (aucun)</OPTION>
+									<OPTION value="0" <?php if ($values['standby_wait'] == 0) echo "selected" ?>>0 (<?php if (FR) { ?>aucun<?php } else { ?>none<?php } ?>)</OPTION>
 									<OPTION value="125" <?php if ($values['standby_wait'] == 125) echo "selected" ?>>125 ms</OPTION>
 									<OPTION value="250" <?php if ($values['standby_wait'] == 250) echo "selected" ?>>250 ms</OPTION>
 									<OPTION value="500" <?php if ($values['standby_wait'] == 500) echo "selected" ?>>500 ms</OPTION>
@@ -146,10 +162,11 @@ if (isset($_POST['start'])) {
 									<OPTION value="2000" <?php if ($values['standby_wait'] == 2000) echo "selected" ?>>2 s</OPTION>
 								</SELECT>
 							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">Temps durant lequel l'agresseur est passif.</SMALL>
+							<SMALL class="form-text text-muted col-sm-12">
+								<?php if (FR) { ?>Temps durant lequel l'agresseur est passif.<?php } else { ?>Time during which the aggressor is passive.<?php } ?></SMALL>
 						</DIV>
 						<DIV class="form-group row">
-							<LABEL for="defense_time" class="col-sm-8 col-form-label">Durée de l'action</LABEL>
+							<LABEL for="defense_time" class="col-sm-8 col-form-label"><?php if (FR) { ?>Durée de l'action<?php } else { ?>Duration of the action<?php } ?></LABEL>
 							<DIV class="col-sm-4">
 								<SELECT name="defense_time" class="form-control">
 									<OPTION value="500" <?php if ($values['defense_time'] == 500) echo "selected" ?>>500 ms</OPTION>
@@ -161,32 +178,38 @@ if (isset($_POST['start'])) {
 									<OPTION value="8000" <?php if ($values['defense_time'] == 8000) echo "selected" ?>>8 s</OPTION>
 								</SELECT>
 							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">Temps pour exécuter votre action. Tenez compte du temps nécessaire pour plusieurs contre-attaques et le scan.</SMALL>
+							<SMALL class="form-text text-muted col-sm-12">
+								<?php if (FR) { ?>Temps pour exécuter votre action. Tenez compte du temps nécessaire pour plusieurs contre-attaques et le scan.<?php } else { ?>
+								Time to execute your action. Consider the time required for multiple counterattacks and the scan.<?php } ?></SMALL>
 						</DIV>
 						<HR>
 						<DIV class="form-group row">
-							<LABEL class="col-sm-8 col-form-label">Afficher l'intitulé de l'attaque ?</LABEL>
+							<LABEL class="col-sm-8 col-form-label">
+								<?php if (FR) { ?>Afficher l'intitulé de l'attaque ?<?php } else { ?>Display the name of the attack ?<?php } ?></LABEL>
 							<DIV class="col-sm-4">
 								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="show_action_text" value="0" <?php if (!$values['show_action_text']) echo "checked" ?> > Non</LABEL>
+								  <LABEL><input class="form-check-input" type="radio" name="show_action_text" value="0" <?php if (!$values['show_action_text']) echo "checked" ?> > <?php if (FR) { ?>Non<?php } else { ?>No<?php } ?></LABEL>
 								</div>
 								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="show_action_text" value="1" <?php if ($values['show_action_text']) echo "checked" ?> > Oui</LABEL>
+								  <LABEL><input class="form-check-input" type="radio" name="show_action_text" value="1" <?php if ($values['show_action_text']) echo "checked" ?> > <?php if (FR) { ?>Oui<?php } else { ?>Yes<?php } ?></LABEL>
 								</div>
 							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">Vous aide à comprendre le mouvement de l'attaquant.</SMALL>
+							<SMALL class="form-text text-muted col-sm-12">
+								<?php if (FR) { ?>Vous aide à comprendre le mouvement de l'attaquant.<?php } else { ?>Help to understand the assaillant's movement.<?php } ?></SMALL>
 						</DIV>
 						<DIV class="form-group row">
-							<LABEL class="col-sm-8 col-form-label">Afficher l'intitulé de la défense ?</LABEL>
+							<LABEL class="col-sm-8 col-form-label">
+								<?php if (FR) { ?>Afficher l'intitulé de la défense ?<?php } else { ?>Display the name of the defense ?<?php } ?></LABEL>
 							<DIV class="col-sm-4">
 								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="show_response_text" value="0" <?php if (!$values['show_response_text']) echo "checked" ?> > Non</LABEL>
+								  <LABEL><input class="form-check-input" type="radio" name="show_response_text" value="0" <?php if (!$values['show_response_text']) echo "checked" ?> > <?php if (FR) { ?>Non<?php } else { ?>No<?php } ?></LABEL>
 								</div>
 								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="show_response_text" value="1" <?php if ($values['show_response_text']) echo "checked" ?> > Oui</LABEL>
+								  <LABEL><input class="form-check-input" type="radio" name="show_response_text" value="1" <?php if ($values['show_response_text']) echo "checked" ?> > <?php if (FR) { ?>Oui<?php } else { ?>Yes<?php } ?></LABEL>
 								</div>
 							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">Vous aide à comprendre la défense.</SMALL>
+							<SMALL class="form-text text-muted col-sm-12">
+								<?php if (FR) { ?>Vous aide à comprendre la défense.<?php } else { ?>Help to understand the defense.<?php } ?></SMALL>
 						</DIV>
 					</DIV>
 				</DIV>
@@ -194,47 +217,29 @@ if (isset($_POST['start'])) {
 			<DIV class="col-md-6">
 				<DIV class="card">
 					<DIV class="card-header">
-						<H1 class="card-title">Entraînements</H1>
+						<H1 class="card-title"><?php if (FR) { ?>Entraînements<?php } else { ?>Trainings<?php } ?></H1>
 					</DIV>
 					<DIV class="card-body">
-						<SMALL class="form-text text-muted">Un entraînement est une série de mouvements.</SMALL>
+						<SMALL class="form-text text-muted">
+							<?php if (FR) { ?>Un entraînement est une série de mouvements.<?php } else { ?>A training is a group of movements.<?php } ?></SMALL>
 						<DIV class="row">
 						<?php foreach ($trainings as $idTraining => $training) { ?>
 							<DIV class="col-6 col-md-12 col-lg-6">
 								<LABEL><INPUT type="checkbox" name="training[]" value="<?= $idTraining ?>" <?php if (isset($values['trainings'][$idTraining])) echo "checked" ?>>
-									<?= $training['title_fr'] ?> (<?= count($training['combos']) ?>)
+									<?= $training['title'] ?> (<?= count($training['combos']) ?>)
 								</LABEL>
 							</DIV>
 						<?php } ?>
 						</DIV>
 					</DIV>
-					<BUTTON type="submit" class="btn btn-primary" name="start">Démarrer</BUTTON>
+					<BUTTON type="submit" class="btn btn-primary" name="start"><?php if (FR) { ?>Démarrer<?php } else { ?>Start<?php } ?></BUTTON>
 				</DIV>
 			</DIV>
 		</DIV>
 	</FORM>
 </DIV>
 
-<FOOTER>
-	<DIV class="container-fluid">
-		<DIV class="row">
-			<DIV class="col-sm-4 text-left">
-			&copy; <A href="http://www.kravmaga217.be" target="_blank">Krav Maga 217</A> & <A href="http://www.extrapaul.be" target="_blank">Paul Barbieux</A>			
-			</DIV>
-			<DIV class="col-sm-4 text-center">
-				<A href="http://www.kravmaga217.be/" target="_blank"><IMG src="img/krav-maga-217-logo-small.png"></A>
-				<A href="http://www.kravmaga.be/" target="_blank"><IMG src="img/krav-maga-global-logo.png"></A>
-			</DIV>
-			<DIV class="col-sm-4 text-right contacts">
-				Claude Hanssens
-				<A href="mailto:claude@kravmaga217.be"><i class="far fa-envelope"></i> Claude@KravMaga217.be</A><br>
-				<A href="tel:+32474174608"><i class="fas fa-phone"></i> 32 (0)474/17 46 08</A>
-				<A href="https://www.facebook.com/KravMaga217/" target="_blank"><i class="fab fa-facebook-square"></i> KravMaga217</A>
-			</DIV>
-		</DIV>
-	</DIV>
-</FOOTER>
-
+<?php require "includes/footer.php"; ?>
 
 <SCRIPT type="text/javascript">
 jQuery(document).ready(function(){
@@ -253,8 +258,8 @@ jQuery(document).ready(function(){
 
 <DIV id="ScreenTraining">
 	<DIV class="d-flex justify-content-center align-items-center">
-		<DIV class="countdown" id="Ready">Prêt ?</DIV>
-		<DIV class="countdown" id="Go" style="display:none;">Défendez-vous !</DIV>
+		<DIV class="countdown" id="Ready"><?php if (FR) { ?>Prêt ?<?php } else { ?>Ready ?<?php } ?></DIV>
+		<DIV class="countdown" id="Go" style="display:none;"><?php if (FR) { ?>Défendez-vous !<?php } else { ?>Defend yourself !<?php } ?></DIV>
 		<?php
 		$iCombo = 0;
 		foreach ($trainings as $idTraining=>$training) {
@@ -284,10 +289,10 @@ jQuery(document).ready(function(){
 				<?php if ($values['show_action_text'] or $values['show_response_text']) { ?>
 				<DIV class="combo-text text-center">
 					<?php if ($values['show_action_text']) { ?>
-						<?= $combo['action_fr'] ?>
+						<?= $combo['action'] ?>
 					<?php } ?>
 					<?php if ($values['show_response_text']) { ?>
-					-&gt; <?= $combo['response_fr'] == "" ? "(sorry : no text)" : $combo['response_fr'] ?>
+					-&gt; <?= $combo['response'] == "" ? "(sorry : no text)" : $combo['response'] ?>
 					<?php } ?>
 				</DIV>
 				<?php } ?>

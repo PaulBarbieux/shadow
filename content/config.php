@@ -25,6 +25,6 @@ define ('KIDA', '$2y$10$LFaRHnQvRZS9qupPeP.qdOA7mIlC5fMdgHwlSDFT5EUeS7mrN6OSK');
 */
 define ('SITE_DESCRIPTION_FR', "Entraînement de Krav Maga");
 define ('SITE_DESCRIPTION_EN', "Training for Krav Maga");
-define ('SITE_KEYWORDS_FR', "krav maga, shadow boxing");
-define ('SITE_KEYWORDS_EN', "krav maga, shadow boxing");
+define ('SITE_KEYWORDS_FR', "krav maga, shadow boxing, entrainement");
+define ('SITE_KEYWORDS_EN', "krav maga, shadow boxing, training");
 ?>

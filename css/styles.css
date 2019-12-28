@@ -108,3 +108,10 @@ BODY.training FOOTER {
 	color:#DDD;
 	border-style: none;
 }
+/*
+	Buttons
+*/
+.btn-group-toggle .btn.active {
+	box-shadow: inset 0px 5px 5px 0px rgba(0, 0, 0, 0.4);
+	cursor:default;
+}
