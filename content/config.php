@@ -23,8 +23,8 @@ define ('KIDA', '$2y$10$LFaRHnQvRZS9qupPeP.qdOA7mIlC5fMdgHwlSDFT5EUeS7mrN6OSK');
 /*
 	META description and keywords
 */
-define ('SITE_DESCRIPTION_FR', "Entraînement de Krav Maga");
-define ('SITE_DESCRIPTION_EN', "Training for Krav Maga");
-define ('SITE_KEYWORDS_FR', "krav maga, shadow boxing, entrainement");
-define ('SITE_KEYWORDS_EN', "krav maga, shadow boxing, training");
+define ('SITE_DESCRIPTION_FR', "Shadow Training: Entraînement de Krav Maga. Entraînez vos techniques de Krav Maga chez vous!");
+define ('SITE_DESCRIPTION_EN', "Shadow Training: Training for Krav Maga. Train your Krav Maga techniques at home!");
+define ('SITE_KEYWORDS_FR', "krav maga, shadow training");
+define ('SITE_KEYWORDS_EN', "krav maga, shadow training");
 ?>

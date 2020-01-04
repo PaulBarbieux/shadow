@@ -111,7 +111,7 @@ if (isset($_GET['index'])) {
 						<TBODY>
 							<?php foreach ($filesIndex[$indexActive] as $fileName=>$file) { ?>
 							<TR>
-								<TD style="background-image: url(<?= IMAGES_FOLDER."/".$file['name'] ?>); background-size: cover; background-position:center center;" width="20" /></TD>
+								<TD style="background-image: url('<?= IMAGES_FOLDER."/".$file['name'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>
 								<TD><?= $file['name'] ?></TD>
 								<TD><?php
 									if (isset($file['standby'])) {

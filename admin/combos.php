@@ -269,11 +269,11 @@ function optionsImage($imageSelected) {
 						</THEAD>
 						<?php foreach ($combos[$indexActive] as $idCombo=>$combo) { ?>
 						<TR>
-							<TD style="background-image: url(<?= IMAGES_FOLDER."/".$combo['image_standby'] ?>); background-size: cover; background-position:center center;" width="20" /></TD>
-							<TD style="background-image: url(<?= IMAGES_FOLDER."/".$combo['image_transition_1'] ?>); background-size: cover; background-position:center center;" width="20" /></TD>
-							<TD style="background-image: url(<?= IMAGES_FOLDER."/".$combo['image_transition_2'] ?>); background-size: cover; background-position:center center;" width="20" /></TD>
-							<TD style="background-image: url(<?= IMAGES_FOLDER."/".$combo['image_transition_3'] ?>); background-size: cover; background-position:center center;" width="20" /></TD>
-							<TD style="background-image: url(<?= IMAGES_FOLDER."/".$combo['image_action'] ?>); background-size: cover; background-position:center center;" width="20" /></TD>
+							<TD style="background-image: url('<?= IMAGES_FOLDER."/".$combo['image_standby'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>
+							<TD style="background-image: url('<?= IMAGES_FOLDER."/".$combo['image_transition_1'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>
+							<TD style="background-image: url('<?= IMAGES_FOLDER."/".$combo['image_transition_2'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>
+							<TD style="background-image: url('<?= IMAGES_FOLDER."/".$combo['image_transition_3'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>
+							<TD style="background-image: url('<?= IMAGES_FOLDER."/".$combo['image_action'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>
 							<TD><?= $combo['action_fr'] ?></TD>
 							<TD><?= $combo['response_fr'] ?></TD>
 							<TD><DIV class="btn-group">
