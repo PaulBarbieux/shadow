@@ -19,7 +19,7 @@
 </head>
 <?php
 $error = false;
-require "includes/sql.php";
+require_once "includes/sql.php";
 /*
 	Get Combos
 */
@@ -52,8 +52,8 @@ while ($row = $rows->fetch()) {
 */
 $action = "setup";
 $values = array(
-	'standby_wait' => 2000,
-	'defense_time' => 5000,
+	'standby_wait' => 500,
+	'defense_time' => 2000,
 	'training_type' => "random",
 	'attacks_qty' => 10,
 	'show_action_text' => 0,
@@ -65,18 +65,23 @@ if (isset($_POST['start'])) {
 		Training
 	*/
 	$action = "training";
-	$values = array('trainings' => array());
+	$values = array('combos' => array());
 	foreach ($_POST as $input => $value) {
 		if ($input == "training") {
 			foreach ($value as $idTraining) {
 				$values['trainings'][$idTraining] = $idTraining;
+			}
+		} elseif ($input == "combo") {
+			// Choosen combo
+			foreach ($value as $idCombo) {
+				$values['combos'][$idCombo] = $idCombo;
 			}
 		} else {
 			$value = trim(strip_tags($value));
 			$values[$input] = $value;
 		}
 	}
-	if (count($values['trainings']) == 0) {
+	if (count($values['combos']) == 0) {
 		$error = true;
 		$message =  FR ? "Veuillez choisir au moins un entraînement." : "Please select at least one training.";
 		$action = "error";
@@ -96,145 +101,193 @@ if (isset($_POST['start'])) {
 	</DIV>
 	<?php } ?>
 	<FORM method="post">
+		<INPUT type="hidden" id="Language" value="<?= LG ?>" />
 		<DIV class="row">
-			<DIV class="col-md-6">
-				<DIV class="card">
+		
+			<DIV class="col-12">
+				<DIV class="card mb-3">
 					<DIV class="card-header">
 						<H1 class="card-title"><?php if (FR) { ?>Paramètres<?php } else { ?>Parameters<?php } ?></H1>
 					</DIV>
 					<DIV class="card-body">
-						<DIV class="form-group row">
+						<DIV class="row">
+					
+							<DIV class="col-sm-12 col-lg-6">
+								<DIV class="form-group">
+									<div class="form-check">
+										<LABEL class="form-check-label"><input class="form-check-input" type="radio" name="training_type" value="random" <?php if ($values['training_type'] == "random") echo "checked" ?> >
+									  		<?php if (FR) { ?>Actions aléatoires<?php } else { ?>Random actions<?php } ?>
+										</LABEL>
+										<SMALL class="form-text text-muted mt-0 mb-2">
+											<?php if (FR) { ?>Les actions d'un entraînement s'enchaînent au hasard.<?php } else { ?>Actions of the training are in random sequence.<?php } ?>
+										</SMALL>
+									</div>
+									<div class="form-check">
+										<LABEL class="form-check-label">
+											<input class="form-check-input" type="radio" name="training_type" value="repeat" <?php if ($values['training_type'] == "repeat") echo "checked" ?> > 
+											<?php if (FR) { ?>Répétition de chaque action<?php } else { ?>Repetition of each action<?php } ?>
+										</LABEL>
+										<SMALL class="form-text text-muted mt-0 mb-2">
+											<?php if (FR) { ?>Chaque action d'un entraînement est répétée avant de passer à la suivante.<?php } else { ?>Each action of the training is repeated before the next.<?php } ?>
+										</SMALL>
+									</div>
+								</DIV>
+							</DIV>
+						
+							<DIV class="col-sm-12 col-lg-6">
+								<LABEL for="attacks_qty" class="col-form-label">
+									<SPAN class="info_qty info_qty_random">
+										<?php if (FR) { ?>Nombre d'actions à enchaîner<?php } else { ?>Number of actions to chain<?php } ?></SPAN>
+									<SPAN class="info_qty info_qty_repeat">
+										<?php if (FR) { ?>Nombre de répétitions pour chaque mouvement<?php } else { ?>Number of repetitions for each movement<?php } ?></SPAN>
+								</LABEL>
+								<DIV class="row">
+									<DIV class="col-sm-4">
+										<INPUT name="attacks_qty" type="number" class="form-control" required value="<?= $values['attacks_qty'] ?>">
+									</DIV>
+									<SMALL class="text-muted col-sm-8">
+										<SPAN class="info_qty info_qty_random">
+											<?php if (FR) { ?>Nombre d'actions qui s'enchaîneront pour votre entraînement.<?php } else { ?>
+											Number of actions that will appear for your training.<?php } ?></SPAN>
+										<SPAN class="info_qty info_qty_repeat">
+											<?php if (FR) { ?>Nombre de répétitions de chaque action de l'entraînement.<?php } else { ?>
+											Number of repetitions of each action of the training.<?php } ?></SPAN>
+									</SMALL>
+									<SMALL class="form-text text-muted col-12">
+										<?php if (FR) { ?>Vous pourrez l'interrompre n'importe quand avec la barre d'espacement de votre clavier ou en cliquant sur l'image.<?php } else { ?>
+										You can interrupt it at any time with the space bar of the keyboard or by clicking on the image.<?php } ?>
+									</SMALL>
+								</DIV>
+							</DIV>
+						
 							<DIV class="col-12">
-								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="training_type" value="random" <?php if ($values['training_type'] == "random") echo "checked" ?> >
-								  <?php if (FR) { ?>Actions aléatoires.<?php } else { ?>Random actions<?php } ?></LABEL>
-								</div>
-								<div class="form-check form-check-inline">
-								  <SMALL class="form-text text-muted">
-								  	<?php if (FR) { ?>Les actions d'un entraînement s'enchaînent au hasard.<?php } else { ?>
-									Actions of the training are in random sequence.<?php } ?>
-								  </SMALL>
-								</div>
+								<HR>
 							</DIV>
+						
+							<DIV class="col-sm-12 col-lg-6">
+								<LABEL for="standby_wait" class="col-form-label"><?php if (FR) { ?>Temps de pause<?php } else { ?>Break time<?php } ?></LABEL>
+								<DIV class="row">
+									<DIV class="col-sm-4">
+										<SELECT name="standby_wait" class="form-control">
+											<OPTION value="0" <?php if ($values['standby_wait'] == 0) echo "selected" ?>>0 (<?php if (FR) { ?>aucun<?php } else { ?>none<?php } ?>)</OPTION>
+											<OPTION value="125" <?php if ($values['standby_wait'] == 125) echo "selected" ?>>125 ms</OPTION>
+											<OPTION value="250" <?php if ($values['standby_wait'] == 250) echo "selected" ?>>250 ms</OPTION>
+											<OPTION value="500" <?php if ($values['standby_wait'] == 500) echo "selected" ?>>500 ms</OPTION>
+											<OPTION value="1000" <?php if ($values['standby_wait'] == 1000) echo "selected" ?>>1 s</OPTION>
+											<OPTION value="2000" <?php if ($values['standby_wait'] == 2000) echo "selected" ?>>2 s</OPTION>
+										</SELECT>
+									</DIV>
+									<SMALL class="form-text text-muted mt-0 mb-2 col-sm-8">
+										<?php if (FR) { ?>Temps durant lequel l'agresseur est passif.<?php } else { ?>Time during which the aggressor is passive.<?php } ?>
+									</SMALL>
+									
+								</DIV>
+							</DIV>
+							
+							<DIV class="col-sm-12 col-lg-6">
+								<LABEL for="defense_time" class="col-form-label"><?php if (FR) { ?>Durée de l'action<?php } else { ?>Duration of the action<?php } ?></LABEL>
+								<DIV class="row">
+									<DIV class="col-sm-4">
+										<SELECT name="defense_time" class="form-control">
+											<OPTION value="500" <?php if ($values['defense_time'] == 500) echo "selected" ?>>500 ms</OPTION>
+											<OPTION value="1000" <?php if ($values['defense_time'] == 1000) echo "selected" ?>>1 s</OPTION>
+											<OPTION value="1500" <?php if ($values['defense_time'] == 1500) echo "selected" ?>>1,5 s</OPTION>
+											<OPTION value="2000" <?php if ($values['defense_time'] == 2000) echo "selected" ?>>2 s</OPTION>
+											<OPTION value="3000" <?php if ($values['defense_time'] == 3000) echo "selected" ?>>3 s</OPTION>
+											<OPTION value="5000" <?php if ($values['defense_time'] == 5000) echo "selected" ?>>5 s</OPTION>
+											<OPTION value="8000" <?php if ($values['defense_time'] == 8000) echo "selected" ?>>8 s</OPTION>
+										</SELECT>
+									</DIV>
+									<SMALL class="form-text text-muted mt-0 mb-2d col-sm-8">
+										<?php if (FR) { ?>Temps pour exécuter votre action. Tenez compte du temps nécessaire pour plusieurs contre-attaques et le scan.<?php } else { ?>
+										Time to execute your action. Consider the time required for multiple counterattacks and the scan.<?php } ?>
+									</SMALL>
+								</DIV>
+							</DIV>
+						
 							<DIV class="col-12">
-								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="training_type" value="repeat" <?php if ($values['training_type'] == "repeat") echo "checked" ?> > 
-								  	<?php if (FR) { ?>Répétition de chaque action<?php } else { ?>Repetition of each action<?php } ?></LABEL>
-								</div>
-								<div class="form-check form-check-inline">
-								  <SMALL class="form-text text-muted">
-								  	<?php if (FR) { ?>Chaque action d'un entraînement est répétée avant de passer à la suivante.<?php } else { ?>Each action of the training is repeated before the next.<?php } ?></SMALL>
-								</div>
+								<HR>
 							</DIV>
-						</DIV>
-						<DIV class="form-group row">
-							<LABEL for="attacks_qty" class="col-sm-8 col-form-label">
-								<SPAN class="info_qty info_qty_random">
-									<?php if (FR) { ?>Nombre d'actions à enchaîner<?php } else { ?>Number of actions to chain<?php } ?></SPAN>
-								<SPAN class="info_qty info_qty_repeat">
-									<?php if (FR) { ?>Nombre de répétitions pour chaque mouvement<?php } else { ?>Number of repetitions for each movement<?php } ?></SPAN>
-							</LABEL>
-							<DIV class="col-sm-4">
-								<INPUT name="attacks_qty" type="number" class="form-control" required value="<?= $values['attacks_qty'] ?>">
+							
+							<DIV class="col-sm-12 col-lg-6">
+								<?php if (FR) { ?>Afficher l'intitulé de l'attaque ?<?php } else { ?>Display the name of the attack ?<?php } ?>
+								<DIV class="form-group">
+									<div class="form-check form-check-inline">
+									  <LABEL><input class="form-check-input" type="radio" name="show_action_text" value="0" <?php if (!$values['show_action_text']) echo "checked" ?> > <?php if (FR) { ?>Non<?php } else { ?>No<?php } ?></LABEL>
+									</div>
+									<div class="form-check form-check-inline">
+									  <LABEL><input class="form-check-input" type="radio" name="show_action_text" value="1" <?php if ($values['show_action_text']) echo "checked" ?> > <?php if (FR) { ?>Oui<?php } else { ?>Yes<?php } ?></LABEL>
+									</div>
+									<SMALL class="form-text text-muted mt-0">
+										<?php if (FR) { ?>Vous aide à comprendre le mouvement de l'attaquant.<?php } else { ?>Help to understand the assaillant's movement.<?php } ?>
+									</SMALL>
+								</DIV>
 							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">
-								<SPAN class="info_qty info_qty_random">
-									<?php if (FR) { ?>Nombre d'actions qui s'enchaîneront pour votre entraînement.<?php } else { ?>
-									Number of actions that will appear for your training.<?php } ?></SPAN>
-								<SPAN class="info_qty info_qty_repeat">
-									<?php if (FR) { ?>Nombre de répétitions de chaque action de l'entraînement.<?php } else { ?>
-									Number of repetitions of each action of the training.<?php } ?></SPAN>
-								<br>
-								<?php if (FR) { ?>Vous pourrez l'interrompre n'importe quand avec la barre d'espacement de votre clavier ou en cliquant sur l'image.<?php } else { ?>
-								You can interrupt it at any time with the space bar of the keyboard or by clicking on the image.<?php } ?>
-							</SMALL>
-						</DIV>
-						<HR>
-						<DIV class="form-group row">
-							<LABEL for="standby_wait" class="col-sm-8 col-form-label"><?php if (FR) { ?>Temps de pause<?php } else { ?>Break time<?php } ?></LABEL>
-							<DIV class="col-sm-4">
-								<SELECT name="standby_wait" class="form-control">
-									<OPTION value="0" <?php if ($values['standby_wait'] == 0) echo "selected" ?>>0 (<?php if (FR) { ?>aucun<?php } else { ?>none<?php } ?>)</OPTION>
-									<OPTION value="125" <?php if ($values['standby_wait'] == 125) echo "selected" ?>>125 ms</OPTION>
-									<OPTION value="250" <?php if ($values['standby_wait'] == 250) echo "selected" ?>>250 ms</OPTION>
-									<OPTION value="500" <?php if ($values['standby_wait'] == 500) echo "selected" ?>>500 ms</OPTION>
-									<OPTION value="1000" <?php if ($values['standby_wait'] == 1000) echo "selected" ?>>1 s</OPTION>
-									<OPTION value="2000" <?php if ($values['standby_wait'] == 2000) echo "selected" ?>>2 s</OPTION>
-								</SELECT>
+							
+							<DIV class="col-sm-12 col-lg-6">
+								<?php if (FR) { ?>Afficher l'intitulé de la défense ?<?php } else { ?>Display the name of the defense ?<?php } ?>
+								<DIV class="form-group">
+									<div class="form-check form-check-inline">
+									  <LABEL><input class="form-check-input" type="radio" name="show_response_text" value="0" <?php if (!$values['show_response_text']) echo "checked" ?> > <?php if (FR) { ?>Non<?php } else { ?>No<?php } ?></LABEL>
+									</div>
+									<div class="form-check form-check-inline">
+									  <LABEL><input class="form-check-input" type="radio" name="show_response_text" value="1" <?php if ($values['show_response_text']) echo "checked" ?> > <?php if (FR) { ?>Oui<?php } else { ?>Yes<?php } ?></LABEL>
+									</div>
+									<SMALL class="form-text text-muted mt-0">
+										<?php if (FR) { ?>Vous aide à comprendre la défense.<?php } else { ?>Help to understand the defense.<?php } ?>
+									</SMALL>
+								</DIV>
 							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">
-								<?php if (FR) { ?>Temps durant lequel l'agresseur est passif.<?php } else { ?>Time during which the aggressor is passive.<?php } ?></SMALL>
-						</DIV>
-						<DIV class="form-group row">
-							<LABEL for="defense_time" class="col-sm-8 col-form-label"><?php if (FR) { ?>Durée de l'action<?php } else { ?>Duration of the action<?php } ?></LABEL>
-							<DIV class="col-sm-4">
-								<SELECT name="defense_time" class="form-control">
-									<OPTION value="500" <?php if ($values['defense_time'] == 500) echo "selected" ?>>500 ms</OPTION>
-									<OPTION value="1000" <?php if ($values['defense_time'] == 1000) echo "selected" ?>>1 s</OPTION>
-									<OPTION value="1500" <?php if ($values['defense_time'] == 1500) echo "selected" ?>>1,5 s</OPTION>
-									<OPTION value="2000" <?php if ($values['defense_time'] == 2000) echo "selected" ?>>2 s</OPTION>
-									<OPTION value="3000" <?php if ($values['defense_time'] == 3000) echo "selected" ?>>3 s</OPTION>
-									<OPTION value="5000" <?php if ($values['defense_time'] == 5000) echo "selected" ?>>5 s</OPTION>
-									<OPTION value="8000" <?php if ($values['defense_time'] == 8000) echo "selected" ?>>8 s</OPTION>
-								</SELECT>
-							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">
-								<?php if (FR) { ?>Temps pour exécuter votre action. Tenez compte du temps nécessaire pour plusieurs contre-attaques et le scan.<?php } else { ?>
-								Time to execute your action. Consider the time required for multiple counterattacks and the scan.<?php } ?></SMALL>
-						</DIV>
-						<HR>
-						<DIV class="form-group row">
-							<LABEL class="col-sm-8 col-form-label">
-								<?php if (FR) { ?>Afficher l'intitulé de l'attaque ?<?php } else { ?>Display the name of the attack ?<?php } ?></LABEL>
-							<DIV class="col-sm-4">
-								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="show_action_text" value="0" <?php if (!$values['show_action_text']) echo "checked" ?> > <?php if (FR) { ?>Non<?php } else { ?>No<?php } ?></LABEL>
-								</div>
-								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="show_action_text" value="1" <?php if ($values['show_action_text']) echo "checked" ?> > <?php if (FR) { ?>Oui<?php } else { ?>Yes<?php } ?></LABEL>
-								</div>
-							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">
-								<?php if (FR) { ?>Vous aide à comprendre le mouvement de l'attaquant.<?php } else { ?>Help to understand the assaillant's movement.<?php } ?></SMALL>
-						</DIV>
-						<DIV class="form-group row">
-							<LABEL class="col-sm-8 col-form-label">
-								<?php if (FR) { ?>Afficher l'intitulé de la défense ?<?php } else { ?>Display the name of the defense ?<?php } ?></LABEL>
-							<DIV class="col-sm-4">
-								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="show_response_text" value="0" <?php if (!$values['show_response_text']) echo "checked" ?> > <?php if (FR) { ?>Non<?php } else { ?>No<?php } ?></LABEL>
-								</div>
-								<div class="form-check form-check-inline">
-								  <LABEL><input class="form-check-input" type="radio" name="show_response_text" value="1" <?php if ($values['show_response_text']) echo "checked" ?> > <?php if (FR) { ?>Oui<?php } else { ?>Yes<?php } ?></LABEL>
-								</div>
-							</DIV>
-							<SMALL class="form-text text-muted col-sm-12">
-								<?php if (FR) { ?>Vous aide à comprendre la défense.<?php } else { ?>Help to understand the defense.<?php } ?></SMALL>
+							
 						</DIV>
 					</DIV>
 				</DIV>
 			</DIV>
-			<DIV class="col-md-6">
+			
+			<DIV class="col-12">
 				<DIV class="card">
 					<DIV class="card-header">
 						<H1 class="card-title"><?php if (FR) { ?>Entraînements<?php } else { ?>Trainings<?php } ?></H1>
 					</DIV>
 					<DIV class="card-body">
-						<SMALL class="form-text text-muted">
-							<?php if (FR) { ?>Un entraînement est une série de mouvements.<?php } else { ?>A training is a group of movements.<?php } ?></SMALL>
-						<DIV class="row">
-						<?php foreach ($trainings as $idTraining => $training) { ?>
-							<DIV class="col-6 col-md-12 col-lg-6">
-								<LABEL><INPUT type="checkbox" name="training[]" value="<?= $idTraining ?>" <?php if (isset($values['trainings'][$idTraining])) echo "checked" ?>>
-									<?= $training['title'] ?> (<?= count($training['combos']) ?>)
+						<P><?php if (FR) { ?>
+							Un entraînement est une série de mouvements. Choisissez un ou plusieurs entraînements, et affinez votre sélection de mouvements si nécessaire. 
+							<?php } else { ?>
+							A training is a group of movements. Choose one or more trainings, and refine your selection of movements if necessary.
+							<?php } ?>
+						</P>
+						<?php
+						foreach ($trainings as $idTraining => $training) {
+							$active = isset($values['trainings'][$idTraining]);
+						?>
+						<DIV id="training_combos_choices_<?= $idTraining ?>" class="training-combos-choices <?php if ($active) echo "active" ?>">
+							<H3 class="custom-control custom-checkbox">
+								<INPUT type="checkbox" name="training[]" id="check_training_<?= $idTraining ?>" class="custom-control-input _check_training" value="<?= $idTraining ?>" <?php if ($active) echo "checked" ?> />
+								<LABEL class="custom-control-label" for="check_training_<?= $idTraining ?>">
+									<?= $training['title'] ?>
+									<span class="badge badge-light"><?= count($training['combos']) ?> <?php if (FR) { ?>mouvements<?php } else { ?>movements<?php } ?></span>
 								</LABEL>
+							</H3>
+							<DIV id="training_combos_<?= $idTraining ?>">
+								<?php
+								if (isset($values['trainings'][$idTraining])) {
+									include "combos_choices.php";
+								} else {
+									$combosChecked = 0;
+								}
+								?>
 							</DIV>
-						<?php } ?>
 						</DIV>
+						<INPUT type="hidden" id="training_count_<?= $idTraining ?>" value="<?= count($training['combos']) ?>" readonly="readonly" combosChecked="<?= $combosChecked ?>" />
+						<?php } ?>
 					</DIV>
-					<BUTTON type="submit" class="btn btn-primary" name="start"><?php if (FR) { ?>Démarrer<?php } else { ?>Start<?php } ?></BUTTON>
 				</DIV>
 			</DIV>
+			
+			<DIV class="col-sm-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2 col-xl-6 offset-xl-3 mt-3">
+				<BUTTON type="submit" class="btn btn-primary btn-lg btn-block" name="start"><i class="fas fa-play"></i> <?php if (FR) { ?>Démarrer<?php } else { ?>Start<?php } ?></BUTTON>
+			</DIV>
+			
 		</DIV>
 	</FORM>
 </DIV>
@@ -251,7 +304,56 @@ jQuery(document).ready(function(){
 		$(".info_qty_" + $(this).val()).show();
 	});
 	$(".info_qty_random").hide();
+	/*
+		Show combos when training is choosen
+	*/
+	$("._check_training").change(function(){
+		trainingId = $(this).val();
+		trainingContainer = $("#training_combos_choices_"+trainingId);
+        combosContainer = $("#training_combos_"+trainingId);
+		counter = ("#training_count_"+trainingId);
+		if ($(this).prop('checked')) {
+			// Get combos
+			var xhr = new XMLHttpRequest();
+    		xhr.onload = function() {
+				$(combosContainer).hide();
+        		$(combosContainer).append(xhr.responseText);
+				$(combosContainer).show(300);
+				$(trainingContainer).addClass('active');
+    		};
+    		xhr.open ('GET', "combos_choices.php?id="+trainingId+"&lg="+$("#Language").val(), true);
+			xhr.send (null);
+			// Set checked combos counter
+			$(counter).attr('combosChecked', $(counter).val());
+		} else {
+			// Erase combos
+			$(combosContainer).hide(300, function() {
+				$(combosContainer).text("");
+				$(combosContainer).show();
+				$(counter).attr('combosChecked', 0);
+				$(trainingContainer).removeClass('active');
+			});
+		}
+	});
 });
+function checkCombo(checkbox) {
+	// Hide training if all combos unchecked
+	trainingId = $(checkbox).attr('trainingId');
+	counter = ("#training_count_"+trainingId);
+	if ($(checkbox).prop('checked')) {
+		$(counter).attr('combosChecked', parseInt($(counter).attr('combosChecked')) + 1 );
+	} else {
+		$(counter).attr('combosChecked', parseInt($(counter).attr('combosChecked')) - 1 );
+	}
+	if ($(counter).attr('combosChecked') == 0) {
+		$("#training_combos_"+trainingId).hide(300, function() {
+			$(this).text("");
+			$("#check_training_"+trainingId).prop('checked',false);
+				$(trainingContainer).removeClass('active');
+			$(this).show();
+		});
+	}
+}
 </SCRIPT>
 
 <?php if ($action == "training") { ?>
@@ -262,23 +364,20 @@ jQuery(document).ready(function(){
 		<DIV class="countdown" id="Go" style="display:none;"><?php if (FR) { ?>Défendez-vous !<?php } else { ?>Defend yourself !<?php } ?></DIV>
 		<?php
 		$iCombo = 0;
-		foreach ($trainings as $idTraining=>$training) {
-			if (isset($values['trainings'][$idTraining])) {
-				// Training choosen
-				foreach ($training['combos'] as $idCombo) {
-					$iCombo++;
-					$combo = $combos[$idCombo];
-					$imgTransit = array();
-					if ($combo['image_transition_1'] != "") {
-						$imgTransit[] = $combo['image_transition_1'];
-					}
-					if ($combo['image_transition_2'] != "") {
-						$imgTransit[] = $combo['image_transition_2'];
-					}
-					if ($combo['image_transition_3'] != "") {
-						$imgTransit[] = $combo['image_transition_3'];
-					}
-					$iTransit = 0;
+		foreach ($values['combos'] as $idCombo) {
+			$iCombo++;
+			$combo = $combos[$idCombo];
+			$imgTransit = array();
+			if ($combo['image_transition_1'] != "") {
+				$imgTransit[] = $combo['image_transition_1'];
+			}
+			if ($combo['image_transition_2'] != "") {
+				$imgTransit[] = $combo['image_transition_2'];
+			}
+			if ($combo['image_transition_3'] != "") {
+				$imgTransit[] = $combo['image_transition_3'];
+			}
+			$iTransit = 0;
 		?>
 			<DIV id="Combo_<?= $iCombo ?>" class="combo" nb-transitions="<?= count($imgTransit) ?>"
 				style="<?php if ($values['standby_wait'] > 0) { ?>background-image:url(<?= IMAGES_FOLDER."/".$combo['image_standby'] ?>);<?php } ?> display:none;">
@@ -298,8 +397,6 @@ jQuery(document).ready(function(){
 				<?php } ?>
 			</DIV>
 		<?php 
-				}
-			}
 		}
 		?>
 	</DIV>
@@ -422,9 +519,7 @@ jQuery(document).ready(function(){
 			}, $("#StandbyWait").val());
 		} else {
 			// End training
-			$("BODY").removeClass("training");
-			$("#ScreenTraining").hide();
-			$("#ScreenSetup").slideDown(500);
+			endTraining();
 		}
 	}
 	function showFinalAction() {
@@ -447,7 +542,7 @@ jQuery(document).ready(function(){
 	function endTraining() {
 		clearTimeout(idAttackTimeout);
 		$("BODY").removeClass("training");
-		$(".combo").hide();
+		$("#ScreenTraining").hide();
 		$("#ScreenSetup").slideDown(500);
 	}
 	

@@ -85,6 +85,38 @@ BODY.training FOOTER {
 	width:100%;
 }
 /*
+	Combo choice
+*/
+.training-combos-choices {
+	border: solid 1px #FFF;
+	border-radius: 5px;
+	margin: 0 -5px;
+	padding: 0 5px;
+}
+.training-combos-choices.active {
+	border: solid 1px #EEE;
+	background-color: rgb(250,250,250);
+}
+.combo-card-choice {
+	display: inline-block;
+	margin: 10px;
+	border-radius: 5px;
+	border: solid 1px #DDD;
+	background-color: #FFF;
+}
+.combo-card-choice .thumbnail {
+	border-radius: 5px;
+	width: 100px;
+	height: 100px;
+	background-size: cover;
+}
+.combo-card-choice .text {
+	padding: 5px;
+	width: 140px;
+	height: 100px;
+	overflow: hidden;
+}
+/*
 	Placeholder
 */
 ::-webkit-input-placeholder {
@@ -109,9 +141,37 @@ BODY.training FOOTER {
 	border-style: none;
 }
 /*
+	Badge
+*/
+.badge {
+	font-weight: normal;
+}
+.badge-light {
+	background-color: #EEE;
+}
+/*
 	Buttons
 */
 .btn-group-toggle .btn.active {
 	box-shadow: inset 0px 5px 5px 0px rgba(0, 0, 0, 0.4);
 	cursor:default;
+}
+/*
+	Inputs
+*/
+.custom-control-label::before {
+	background-color: transparent;
+	border: solid 1px #666;
+}
+.custom-control-label::after {
+	background-size: 100% 100%;
+}
+H3.custom-checkbox LABEL {
+	cursor: pointer;
+}
+H3 .custom-control-label::before {
+	top: .5rem;
+}
+H3 .custom-control-label::after {
+	top: .5rem;
 }
