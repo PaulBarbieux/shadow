@@ -261,24 +261,24 @@ if (isset($_POST['start'])) {
 							$active = isset($values['trainings'][$idTraining]);
 						?>
 						<DIV id="training_combos_choices_<?= $idTraining ?>" class="training-combos-choices <?php if ($active) echo "active" ?>">
-							<H3 class="custom-control custom-checkbox">
-								<INPUT type="checkbox" name="training[]" id="check_training_<?= $idTraining ?>" class="custom-control-input _check_training" value="<?= $idTraining ?>" <?php if ($active) echo "checked" ?> />
-								<LABEL class="custom-control-label" for="check_training_<?= $idTraining ?>">
-									<?= $training['title'] ?>
-									<span class="badge badge-light"><?= count($training['combos']) ?> <?php if (FR) { ?>mouvements<?php } else { ?>movements<?php } ?></span>
-								</LABEL>
+							<H3 class="custom-control custom-checkbox title-training">
+								<INPUT type="checkbox" name="training[]" id="check_training_<?= $idTraining ?>" class="custom-control-input check-training" value="<?= $idTraining ?>" <?php if ($active) echo "checked" ?> />
+								<LABEL class="custom-control-label" for="check_training_<?= $idTraining ?>"></LABEL>
+								<A href="#training_combos_<?= $idTraining ?>" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="training_combos_<?= $idTraining ?>"><?= $training['title'] ?></A>
+								<span class="badge badge-light"><?= count($training['combos']) ?> <?php if (FR) { ?>mouvements<?php } else { ?>movements<?php } ?></span>
 							</H3>
-							<DIV id="training_combos_<?= $idTraining ?>">
+							<DIV id="training_combos_<?= $idTraining ?>" class="collapse <?php if ($active) echo "show" ?>" id-training="<?= $idTraining ?>">
 								<?php
 								if (isset($values['trainings'][$idTraining])) {
 									include "combos_choices.php";
 								} else {
-									$combosChecked = 0;
+								?>
+								<DIV style="width: 150px; height:100px;"></DIV>
+								<?php
 								}
 								?>
 							</DIV>
 						</DIV>
-						<INPUT type="hidden" id="training_count_<?= $idTraining ?>" value="<?= count($training['combos']) ?>" readonly="readonly" combosChecked="<?= $combosChecked ?>" />
 						<?php } ?>
 					</DIV>
 				</DIV>
@@ -305,53 +305,63 @@ jQuery(document).ready(function(){
 	});
 	$(".info_qty_random").hide();
 	/*
-		Show combos when training is choosen
+		Collapse open : get combos on first time
 	*/
-	$("._check_training").change(function(){
-		trainingId = $(this).val();
-		trainingContainer = $("#training_combos_choices_"+trainingId);
-        combosContainer = $("#training_combos_"+trainingId);
+	$('.collapse').on('show.bs.collapse', function () {
+		trainingId = $(this).attr("id-training");
+		console.log(trainingId);
 		counter = ("#training_count_"+trainingId);
-		if ($(this).prop('checked')) {
-			// Get combos
+		if ($.trim($(this).text()) == "") {
+			// Empty : get combos
+			combosContainer = $(this);
 			var xhr = new XMLHttpRequest();
     		xhr.onload = function() {
-				$(combosContainer).hide();
-        		$(combosContainer).append(xhr.responseText);
-				$(combosContainer).show(300);
-				$(trainingContainer).addClass('active');
+        		$(combosContainer).html(xhr.responseText);
     		};
-    		xhr.open ('GET', "combos_choices.php?id="+trainingId+"&lg="+$("#Language").val(), true);
+			if ($(this).parent().find(".check-training").prop('checked')) {
+				paramChecked = "&checked";
+				$(combosContainer).parent().addClass('active');
+			} else {
+				paramChecked = "";
+			}
+    		xhr.open ('GET', "combos_choices.php?id="+trainingId+"&lg="+$("#Language").val()+paramChecked, true);
 			xhr.send (null);
 			// Set checked combos counter
 			$(counter).attr('combosChecked', $(counter).val());
+		}
+	});
+	/*
+		Check a training
+	*/
+	$(".check-training").click(function(){
+		combosCollapse = $(this).parent().parent().find(".collapse");
+		if ($(this).prop('checked')) {
+			// Collapse open
+			$(combosCollapse).collapse('show');
+			// Check all combos
+			$(combosCollapse).find(".check-combo").prop('checked',true);
+			// Set active
+			$("#training_combos_choices_"+$(this).val()).addClass("active");
 		} else {
-			// Erase combos
-			$(combosContainer).hide(300, function() {
-				$(combosContainer).text("");
-				$(combosContainer).show();
-				$(counter).attr('combosChecked', 0);
-				$(trainingContainer).removeClass('active');
-			});
+			// Uncheck all combo
+			$(combosCollapse).find(".check-combo").prop('checked',false);
+			// Unactive
+			$("#training_combos_choices_"+$(this).val()).removeClass("active");
 		}
 	});
 });
 function checkCombo(checkbox) {
 	// Hide training if all combos unchecked
 	trainingId = $(checkbox).attr('trainingId');
-	counter = ("#training_count_"+trainingId);
-	if ($(checkbox).prop('checked')) {
-		$(counter).attr('combosChecked', parseInt($(counter).attr('combosChecked')) + 1 );
+	trainingContainer = $("#training_combos_choices_"+trainingId);
+	trainingCheck = $(trainingContainer).find(".check-training");
+	if ($(trainingContainer).find(".check-combo:checked").length == 0) {
+		// No more combo checked
+		$(trainingContainer).removeClass('active');
+		$(trainingCheck).prop('checked',false);
 	} else {
-		$(counter).attr('combosChecked', parseInt($(counter).attr('combosChecked')) - 1 );
-	}
-	if ($(counter).attr('combosChecked') == 0) {
-		$("#training_combos_"+trainingId).hide(300, function() {
-			$(this).text("");
-			$("#check_training_"+trainingId).prop('checked',false);
-				$(trainingContainer).removeClass('active');
-			$(this).show();
-		});
+		$(trainingContainer).addClass('active');
+		$(trainingCheck).prop('checked',true);
 	}
 }
 </SCRIPT>

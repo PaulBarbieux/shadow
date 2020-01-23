@@ -8,13 +8,14 @@ if (isset($_GET['id'])) {
 	require_once "includes/sql.php";
 	$idTraining = $_GET['id'];
 	$lg = $_GET['lg'];
+	$checked = isset($_GET['checked']);
 	$rows = executeSql ("SELECT * FROM combos, training_combos WHERE training_id='".$idTraining."' AND combo_id=id");
 	$trainingCombos = array();
 	while ($row = $rows->fetch()) {
 		$trainingCombos[$row['id']] = $row;
 		$trainingCombos[$row['id']]['action'] = $row['action_'.$lg];
 		$trainingCombos[$row['id']]['response'] = $row['response_'.$lg];
-		$trainingCombos[$row['id']]['checked'] = true;
+		$trainingCombos[$row['id']]['checked'] = $checked;
 	}
 } else {
 	/*
@@ -42,9 +43,9 @@ foreach ($trainingCombos as $idCombo=>$combo) {
 		</DIV>
 		<DIV class="text">
 			<div class="custom-control custom-checkbox">
-				<INPUT type="checkbox" name="combo[]" id="check<?= $idCombo ?>" class="custom-control-input" 
+				<INPUT type="checkbox" name="combo[]" id="check<?= $idTraining.$idCombo ?>" class="custom-control-input check-combo" 
 					value="<?= $idCombo ?>" <?php if ($combo['checked']) echo 'checked' ?> onClick="checkCombo(this)" trainingId="<?= $idTraining ?>">
-				<label class="custom-control-label" for="check<?= $idCombo ?>"><?= $combo['action'] ?></label>
+				<label class="custom-control-label" for="check<?= $idTraining.$idCombo ?>"><?= $combo['action'] ?></label>
 			</div>
 		</DIV>
 	</DIV>
