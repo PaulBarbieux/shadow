@@ -409,7 +409,7 @@ jQuery(document).ready(function(){
 	$("#CopyUrlPreset").click(function() {
 		$($("#UrlPreset")).select();
      	document.execCommand('copy');
-		if ($("#Language") == "fr") {
+		if ($("#Language").val() == "fr") {
 			$('#UrlPreset').attr('title',"Lien copié");
 		} else {
 			$('#UrlPreset').attr('title',"Link copied");
