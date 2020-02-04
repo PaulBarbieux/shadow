@@ -11,9 +11,10 @@
 <link rel="shortcut icon" href="favicon.ico">
 <title>Shadow Training</title>
 <link rel="stylesheet" href="css/bootstrap.min.css"/>
-<link rel="stylesheet" href="css/styles.css"/>
+<link rel="stylesheet" href="css/styles.css?20200204"/>
 <link rel="stylesheet" href="css/branding.css"/>
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+<script src="js/popper.min.js"></script>
 <script src="js/jquery-3.2.1.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 </head>
@@ -31,7 +32,7 @@ while ($row = $rows->fetch()) {
 	$combos[$row['id']]['response'] = $row['response_'.LG];
 }
 /*
-	Get trainongs
+	Get trainings
 */
 $rows = executeSql("SELECT * FROM trainings T, training_combos C WHERE id=training_id ORDER BY training_id, combo_id");
 $trainings = array();
@@ -60,13 +61,41 @@ $values = array(
 	'show_response_text' => 0
 );
 
-if (isset($_POST['start'])) {
+if (isset($_POST['start']) or isset($_POST['save'])) {
 	/*
-		Training
+		Training (or save training)
+	*/
+	if (isset($_POST['start'])) {
+		$action = "training";
+	} else {
+		$action = "save";
+	}
+	$values = setValues($_POST);
+	if (count($values['combos']) == 0) {
+		$error = true;
+		$message =  FR ? "Veuillez choisir au moins un entraînement." : "Please select at least one training.";
+		$action = "error";
+	} elseif ($action == "save") {
+		$idPreset = time();
+		executeSql ("INSERT INTO presets VALUES (".$idPreset.",'".serialize($_POST)."')");
+	}
+} elseif (isset($_GET['preset'])) {
+	/*
+		Training from saved parameters
 	*/
 	$action = "training";
+	$rows = executeSql("SELECT parameters FROM presets WHERE id=".$_GET['preset']);
+	if ($row = $rows->fetch()) {
+		$values = setValues(unserialize($row['parameters']));
+	} else {
+		$error = true;
+		$message =  FR ? "Désolé : numéro d'enregistrement inconnu." : "Sorry : unknown record number.";
+		$action = "error";
+	}
+}
+function setValues($inputs) {
 	$values = array('combos' => array());
-	foreach ($_POST as $input => $value) {
+	foreach ($inputs as $input => $value) {
 		if ($input == "training") {
 			foreach ($value as $idTraining) {
 				$values['trainings'][$idTraining] = $idTraining;
@@ -81,22 +110,40 @@ if (isset($_POST['start'])) {
 			$values[$input] = $value;
 		}
 	}
-	if (count($values['combos']) == 0) {
-		$error = true;
-		$message =  FR ? "Veuillez choisir au moins un entraînement." : "Please select at least one training.";
-		$action = "error";
-	}
+	return $values;
 }
-
 ?>
 <BODY class="<?= $action ?>">
 
 
 <DIV id="ScreenSetup" class="container mt-3" <?php if ($action == "training") { ?>style="display:none;"<?php } ?>>
-	<?php if ($error) { ?>
+	<?php if ($error or $action == "save") { ?>
 	<DIV class="row">
 		<DIV class="col-12">
+			<?php if ($error) { ?>
 			<P class="alert alert-danger"><?= $message ?></P>
+			<?php } else { ?>
+			<?php $urlPreset = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . "?preset=" . $idPreset ?>
+			<DIV class="card mb-3">
+				<DIV class="card-body">
+					<?php if (FR) { ?>
+					<P class="alert alert-success">Vos choix sont enregistrés.</P>
+					<P>Vous pouvez à tous moments exécuter cet entraînement avec le lien ci-dessous.<br>
+					Copiez-collez ce lien et enregistrez-le dans vos favoris ([CTRL]+[D]) ou sur votre ordinateur.</P>
+					<?php } else { ?>
+					<P class="alert alert-success">Your choices are saved.</P>
+					<P>You can run this training at any time with the link below.<br>
+					Copy-paste this link and save it in your bookmarks ([CTRL]+[D]) or on your computer.</P>
+					<?php } ?>
+					<DIV class="input-group">
+						  <INPUT type="text" class="form-control" id="UrlPreset" value="<?= $urlPreset ?>" data-toggle="tooltip" data-placement="top" title="<?= FR ? 'Lien copié' : 'Link copied' ?>">
+						  <DIV class="input-group-append">
+								<A href="javascript:void(0);" id="CopyUrlPreset" class="btn btn-outline-primary" title="<?= FR ? 'Copier le lien' : 'Copy the link' ?>"><I class="fas fa-copy"></I></A>
+						  </DIV>
+					</DIV>
+				</DIV>
+			</DIV>
+			<?php } ?>
 		</DIV>
 	</DIV>
 	<?php } ?>
@@ -284,8 +331,15 @@ if (isset($_POST['start'])) {
 				</DIV>
 			</DIV>
 			
-			<DIV class="col-sm-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2 col-xl-6 offset-xl-3 mt-3">
-				<BUTTON type="submit" class="btn btn-primary btn-lg btn-block" name="start"><i class="fas fa-play"></i> <?php if (FR) { ?>Démarrer<?php } else { ?>Start<?php } ?></BUTTON>
+			<DIV class="col-sm-12 text-center mt-3">
+				<DIV class="btn-group">
+					<BUTTON type="submit" class="btn btn-primary btn-lg" name="start">
+						<i class="fas fa-play"></i> <?php if (FR) { ?>Démarrer l'entraînement<?php } else { ?>Start the training<?php } ?>
+					</BUTTON>
+					<BUTTON type="submit" class="btn btn-light btn-lg" name="save">
+						<i class="fas fa-save"></i> <?php if (FR) { ?>Enregistrer l'entraînement<?php } else { ?>Save the training<?php } ?>
+					</BUTTON>
+				</DIV>
 			</DIV>
 			
 		</DIV>
@@ -348,6 +402,20 @@ jQuery(document).ready(function(){
 			// Unactive
 			$("#training_combos_choices_"+$(this).val()).removeClass("active");
 		}
+	});
+	/*
+		Preset saved : copy and bookmark
+	*/
+	$("#CopyUrlPreset").click(function() {
+		$($("#UrlPreset")).select();
+     	document.execCommand('copy');
+		if ($("#Language") == "fr") {
+			$('#UrlPreset').attr('title',"Lien copié");
+		} else {
+			$('#UrlPreset').attr('title',"Link copied");
+		}
+		$('#UrlPreset').tooltip('show');
+		return false;
 	});
 });
 function checkCombo(checkbox) {
