@@ -607,14 +607,14 @@ jQuery(document).ready(function(){
 	}
 	
 	/*
-		Stop diaporama by clicking on spacebar
+		Stop diaporama by clicking on spacebar or on image
 	*/
 	$(document).keypress(function(e){
 		if (e.which == 32) {
 			endTraining();
 		}
 	});
-	$(".combo IMG").click(function() {
+	$(".combo").click(function() {
 		endTraining();
 	});
 	function endTraining() {
