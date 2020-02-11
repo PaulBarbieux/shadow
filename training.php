@@ -515,7 +515,6 @@ jQuery(document).ready(function(){
 	}
 	// Compute timing for images transition
 	defenseTime = $("#DefenseTime").val();
-	console.log(defenseTime);
 	if (defenseTime >= 5000) {
 		fadingTime = 1200;
 	} else {
@@ -529,7 +528,6 @@ jQuery(document).ready(function(){
 			}
 		}
 	}
-	defenseTime -= fadingTime;
 	iAction = 0;
 	setTimeout(function(){
 		$("#Ready").hide();
@@ -618,7 +616,9 @@ jQuery(document).ready(function(){
 		endTraining();
 	});
 	function endTraining() {
-		clearTimeout(idAttackTimeout);
+		if (typeof idAttackTimeout != 'undefined') {
+			clearTimeout(idAttackTimeout);
+		}
 		$("BODY").removeClass("training");
 		$("#ScreenTraining").hide();
 		$("#ScreenSetup").slideDown(500);
