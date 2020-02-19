@@ -49,9 +49,16 @@ FOOTER {
 	background-color: #000;
 	color: #CCC;
 }
+FOOTER .foot-part {
+	margin-bottom: 10px;
+}
+FOOTER .foot-part A,
+FOOTER .foot-part SPAN {
+	white-space: nowrap;
+}	
 @media (min-width: 996px) {
 	BODY:not(.training) {
-		padding-bottom: 120px;
+		padding-bottom: 140px;
 	}
 	FOOTER {
 		position: absolute;
@@ -177,4 +184,15 @@ H3 .custom-control-label::before {
 }
 H3 .custom-control-label::after {
 	top: .5rem;
+}
+/*
+	Thin screen
+*/
+@media (max-width: 500px) {
+	H3 {
+		font-size: 1.25rem;
+	}
+	.countdown {
+		font-size: 3rem;
+	}
 }

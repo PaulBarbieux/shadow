@@ -11,7 +11,7 @@
 <link rel="shortcut icon" href="favicon.ico">
 <title>Shadow Training</title>
 <link rel="stylesheet" href="css/bootstrap.min.css"/>
-<link rel="stylesheet" href="css/styles.css?20200204"/>
+<link rel="stylesheet" href="css/styles.css?20200219"/>
 <link rel="stylesheet" href="css/branding.css"/>
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
 <script src="js/popper.min.js"></script>
@@ -334,10 +334,10 @@ function setValues($inputs) {
 			<DIV class="col-sm-12 text-center mt-3">
 				<DIV class="btn-group">
 					<BUTTON type="submit" class="btn btn-primary btn-lg" name="start">
-						<i class="fas fa-play"></i> <?php if (FR) { ?>Démarrer l'entraînement<?php } else { ?>Start the training<?php } ?>
+						<i class="fas fa-play"></i> <?php if (FR) { ?>Démarrer<SPAN class="d-none d-sm-inline"> l'entraînement</SPAN><?php } else { ?>Start<SPAN class="d-none d-sm-inline"> the training</SPAN><?php } ?>
 					</BUTTON>
 					<BUTTON type="submit" class="btn btn-light btn-lg" name="save">
-						<i class="fas fa-save"></i> <?php if (FR) { ?>Enregistrer l'entraînement<?php } else { ?>Save the training<?php } ?>
+						<i class="fas fa-save"></i> <?php if (FR) { ?>Enregistrer<SPAN class="d-none d-sm-inline"> l'entraînement</SPAN><?php } else { ?>Save<SPAN class="d-none d-sm-inline"> the training</SPAN><?php } ?>
 					</BUTTON>
 				</DIV>
 			</DIV>
@@ -496,8 +496,8 @@ jQuery(document).ready(function(){
 	} else {
 		size = $("HTML").width();
 	}
-	$("#ScreenTraining > DIV, .combo").height(size);
-	$(".combo").width(size);
+	$("#ScreenTraining > DIV, .combo, .combo > IMG").height(size);
+	$(".combo, .combo > IMG").width(size);
 	/*
 		Diaporama of actions
 	*/
