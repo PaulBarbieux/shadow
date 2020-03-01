@@ -34,10 +34,13 @@ while ($row = $rows->fetch()) {
 /*
 	Get trainings
 */
-$rows = executeSql("SELECT * FROM trainings T, training_combos C WHERE id=training_id ORDER BY training_id, combo_id");
+$rows = executeSql("SELECT training_id, combo_id, title_fr, title_en
+					FROM trainings T, training_combos C, combos B 
+					WHERE T.id=training_id AND combo_id=B.id
+					ORDER BY training_id, image_action");
 $trainings = array();
 while ($row = $rows->fetch()) {
-	if (isset($trainings[$row['id']])) {
+	if (isset($trainings[$row['training_id']])) {
 		// Add combo to existing training
 		$trainings[$row['training_id']]['combos'][$row['combo_id']] = $row['combo_id'];
 	} else {
