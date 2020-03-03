@@ -28,9 +28,19 @@ require $_SERVER['DOCUMENT_ROOT']."/includes/sql.php";
 */
 $edit = false;
 $create = false;
+$sort = false;
 $error = false;
 $message = "";
-if (isset($_POST['save'])) {
+if (isset($_POST['saveSort'])) {
+	/*
+		Save sort (and remain in sort page)
+	*/
+	$idTraining = $_GET['sort'];
+	foreach ($_POST['sort'] as $idCombo=>$sort) {
+		executeSql ("UPDATE training_combos SET sort=".($sort == "" ? "NULL" : $sort)." WHERE training_id='".$idTraining."' AND combo_id=".$idCombo);
+	}
+	$message = "Tri enregistré.";
+} elseif (isset($_POST['save'])) {
 	/*
 		Save values
 	*/
@@ -109,16 +119,22 @@ $rows = executeSql("
 	ORDER BY IFNULL(T.sort,999999), IFNULL(C.sort,999999), combo_id");
 $trainings = array();
 while ($row = $rows->fetch()) {
-	if (isset($trainings[$row['training_id']])) {
-		$trainings[$row['training_id']]['combos'][$row['combo_id']] = $row['combo_id'];
-	} else {
+	if (!isset($trainings[$row['training_id']])) {
 		$trainings[$row['training_id']] = array(
 			'id' => $row['training_id'],
 			'sort' => $row['training_sort'],
 			'title_fr' => $row['title_fr'],
-			'combos' => array($row['combo_id'] => $row['combo_id'])
+			'combos' => array()
 		);
 	}
+	$trainings[$row['training_id']]['combos'][$row['combo_id']] = $row['combo_sort'];
+}
+if (isset($_GET['sort'])) {
+	/*
+		Sort combos
+	*/
+	$sort = true;
+	$idTraining = $_GET['sort'];
 }
 
 ?>	
@@ -166,21 +182,37 @@ while ($row = $rows->fetch()) {
 					</DIV>
 					<DIV class="col-xl-9 col-lg-8 col-md-12">
 						<P>Cochez les combos constituant l'entraînement</P>
-						<DIV class="row">
-							<?php foreach ($combos as $idCombo=>$combo) { ?>
-							<DIV class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-								<DIV class="card mb-3">
-									<LABEL>
-										<IMG class="card-img-top" src="<?= IMAGES_FOLDER."/".$combos[$idCombo]['image_action'] ?>">
-										<DIV class="card-body">
-											<INPUT name="combo[]" type="checkbox" value="<?= $idCombo ?>" <?php if (isset($values['combos'][$idCombo])) echo "checked" ?>> <?= $combos[$idCombo]['action_fr'] ?>
-										</DIV>
-									</LABEL>
+						<?php foreach ($combos as $idCombo=>$sort) { ?>
+						<DIV class="card card-combo">
+							<LABEL>
+								<IMG class="card-img-top" src="<?= IMAGES_FOLDER."/".$combos[$idCombo]['image_action'] ?>">
+								<DIV class="card-body">
+									<INPUT name="combo[]" type="checkbox" value="<?= $idCombo ?>" <?php if (isset($values['combos'][$idCombo])) echo "checked" ?>> <?= $combos[$idCombo]['action_fr'] ?>
 								</DIV>
-							</DIV>
-							<?php } ?>
+							</LABEL>
 						</DIV>
+						<?php } ?>
 					</DIV>
+				</DIV>
+			</FORM>
+			
+			<?php } elseif ($sort) { ?>
+
+			<H2>Tri des combos pour <?= $trainings[$idTraining]['title_fr'] ?></H2>
+			<FORM method="post">
+				<?php foreach ($trainings[$idTraining]['combos'] as $idCombo=>$sort) { ?>
+				<DIV class="card card-combo">
+					<LABEL>
+						<IMG class="card-img-top" src="<?= IMAGES_FOLDER."/".$combos[$idCombo]['image_action'] ?>">
+						<DIV class="card-body">
+							<INPUT name="sort[<?= $idCombo ?>]" type="number" value="<?= $sort ?>" style="width:100px;" />
+						</DIV>
+					</LABEL>
+				</DIV>
+				<?php } ?>
+				<DIV>
+					<BUTTON type="submit" name="saveSort" class="btn btn-success"><i class="fas fa-check"></i> Enregistrer & rafraîchir</BUTTON>
+					<A href="?reset" class="btn btn-default">Retour</A>
 				</DIV>
 			</FORM>
 			
@@ -194,17 +226,16 @@ while ($row = $rows->fetch()) {
 			<H2><?= $training['sort'] ?> / <?= $training['title_fr'] ?>
 				<DIV class="btn-group">
 					<A href="?edit=<?= $idTraining ?>" class="btn btn-xs btn-primary"><i class="fas fa-pencil-alt"></i></A> 
+					<A href="?sort=<?= $idTraining ?>" class="btn btn-xs btn-warning"><i class="fas fa-sort-numeric-down"></i></A> 
 					<A href="?delete=<?= $idTraining ?>" class="btn btn-xs btn-danger _confirm" confirm="Êtes-vous certain de supprimer le training <?= $training['title_fr'] ?> ?"><i class="fas fa-trash"></i></A>
 				</DIV>
 			</H2>
 			<DIV class="row">
 				<?php foreach ($training['combos'] as $idCombo=>$combo) { ?>
-				<DIV class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-					<DIV class="card mb-3">
-						<IMG class="card-img-top" src="<?= IMAGES_FOLDER."/".$combos[$idCombo]['image_action'] ?>">
-						<DIV class="card-body">
-							<p><?= $combos[$idCombo]['action_fr'] ?></p>
-						</DIV>
+				<DIV class="card card-combo">
+					<IMG class="card-img-top" src="<?= IMAGES_FOLDER."/".$combos[$idCombo]['image_action'] ?>">
+					<DIV class="card-body">
+						<p><?= $combos[$idCombo]['action_fr'] ?></p>
 					</DIV>
 				</DIV>
 				<?php } ?>

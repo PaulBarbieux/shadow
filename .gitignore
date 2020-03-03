@@ -1,4 +1,5 @@
 content/*.db
 content/img-attacks/
+content/config.php
 *.mno
 _notes/

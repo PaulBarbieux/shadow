@@ -39,6 +39,16 @@ H1, H2, H3 {
 .card A:not(.btn) {
 	color: #007bff !important;
 }
+.card-combo {
+	display: inline-block;
+	width: 150px;
+	max-width: 150px;
+	margin: 10px;
+}
+.card-combo .card-body {
+	padding: 10px;
+	font-size: .8rem;
+}
 /*
 	Footer
 */
