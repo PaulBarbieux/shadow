@@ -37,7 +37,7 @@ while ($row = $rows->fetch()) {
 $rows = executeSql("SELECT training_id, combo_id, title_fr, title_en
 					FROM trainings T, training_combos C, combos B 
 					WHERE T.id=training_id AND combo_id=B.id
-					ORDER BY training_id, image_action");
+					ORDER BY IFNULL(T.sort,999999), IFNULL(C.sort, 999999), IFNULL(B.sort, 999999),  B.image_action");
 $trainings = array();
 while ($row = $rows->fetch()) {
 	if (isset($trainings[$row['training_id']])) {

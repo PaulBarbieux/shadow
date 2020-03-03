@@ -37,16 +37,27 @@ if (isset($_POST['save'])) {
 	$values = $_POST;
 	if ($_POST['mode'] == "create") {
 		executeSql("
-			INSERT INTO trainings (id, title_fr) 
-			VALUES ('".$values['id']."',".$db->quote($values['title_fr']).")");
+			INSERT INTO trainings (id, title_fr, title_en, sort) 
+			VALUES (".
+				$db->quote($values['id'])  ."," .
+				($values['title_fr'] == "" ? "NULL" : $db->quote($values['title_fr'])) . "," .
+				($values['title_en'] == "" ? "NULL" : $db->quote($values['title_en'])) . "," .
+				($values['sort'] == "" ? "NULL" : $values['sort']) .
+				")");
 		$message = "Training ".$values['id']." créé.";
 	} else {
-		executeSql("UPDATE trainings SET id='".$values['id']."', title_fr=".$db->quote($values['title_fr'])." WHERE id='".$values['id_old']."'");
+		executeSql("
+			UPDATE trainings SET 
+				id=". $db->quote($values['id']) . ",
+				title_fr=" . ($values['title_fr'] == "" ? "NULL" : $db->quote($values['title_fr'])). ",
+				title_en=" . ($values['title_en'] == "" ? "NULL" : $db->quote($values['title_en'])). ",
+				sort=" . ($values['sort'] == "" ? "NULL" : $values['sort']) . "
+				WHERE id=" . $db->quote($values['id_old']));
 		executeSql("DELETE FROM training_combos WHERE training_id='".$values['id_old']."'");
 		$message = "Training ".$values['id']." modifié.";
 	}
 	foreach ($values['combo'] as $idCombo) {
-		executeSql("INSERT INTO training_combos VALUES ('".$values['id']."',".$idCombo.")");
+		executeSql("INSERT INTO training_combos (training_id, combo_id) VALUES ('".$values['id']."',".$idCombo.")");
 	}
 } elseif (isset($_GET['edit'])) {
 	/*
@@ -68,6 +79,8 @@ if (isset($_POST['save'])) {
 	$values = array(
 		'id' => "",
 		'title_fr' => "",
+		'title_en' => "",
+		'sort' => "",
 		'combos' => array()
 	);
 } elseif (isset($_GET['delete'])) {
@@ -90,17 +103,18 @@ while ($row = $rows->fetch()) {
 	Get trainings
 */
 $rows = executeSql("
-	SELECT *
-	FROM trainings, training_combos
-	WHERE trainings.id = training_id
-	ORDER BY title_fr, combo_id");
+	SELECT training_id, title_fr, combo_id, T.sort training_sort, C.sort combo_sort
+	FROM trainings T, training_combos C
+	WHERE T.id = training_id
+	ORDER BY IFNULL(T.sort,999999), IFNULL(C.sort,999999), combo_id");
 $trainings = array();
 while ($row = $rows->fetch()) {
 	if (isset($trainings[$row['training_id']])) {
 		$trainings[$row['training_id']]['combos'][$row['combo_id']] = $row['combo_id'];
 	} else {
 		$trainings[$row['training_id']] = array(
-			'id' => $row['id'],
+			'id' => $row['training_id'],
+			'sort' => $row['training_sort'],
 			'title_fr' => $row['title_fr'],
 			'combos' => array($row['combo_id'] => $row['combo_id'])
 		);
@@ -131,11 +145,22 @@ while ($row = $rows->fetch()) {
 				<DIV class="row">
 					<DIV class="col-xl-3 col-lg-4 col-md-12">
 						<H2><?= ($create ? "Nouveau" : "Modifier") ?> training</H2>
-						<LABEL for="id">Identifiant</LABEL>
-						<INPUT type="text" name="id" class="form-control" required value="<?= $values['id'] ?>" placeholder="Code identifiant (pas d'espace ni d'accent)">
-						<LABEL for="title_fr">Titre</LABEL>
-						<INPUT type="text" name="title_fr" class="form-control" required value="<?= $values['title_fr'] ?>">
-						<BR>
+						<DIV class="form-group">
+							<LABEL for="id">Identifiant</LABEL>
+							<INPUT type="text" name="id" class="form-control" required value="<?= $values['id'] ?>" placeholder="Code identifiant (pas d'espace ni d'accent)">
+						</DIV>
+						<DIV class="form-group">
+							<LABEL for="title_fr">Titre</LABEL>
+							<INPUT type="text" name="title_fr" class="form-control" required placeholder="Français" value="<?= $values['title_fr'] ?>">
+						</DIV>
+						<DIV class="form-group">
+							<LABEL for="title_en">Title</LABEL>
+							<INPUT type="text" name="title_en" class="form-control" required placeholder="English" value="<?= $values['title_en'] ?>">
+						</DIV>
+						<DIV class="form-group">
+							<LABEL for="sort">Tri</LABEL>
+							<INPUT type="number" name="sort" class="form-control" value="<?= $values['sort'] ?>" placeholder="999" style="width:100px; ">
+						</DIV>
 						<BUTTON type="submit" name="save" class="btn btn-success"><i class="fas fa-check"></i> Enregistrer</BUTTON>
 						<A href="?reset" class="btn btn-default">Annuler</A>
 					</DIV>
@@ -166,7 +191,7 @@ while ($row = $rows->fetch()) {
 			
 			<?php foreach ($trainings as $idTraining=>$training) { ?>
 			
-			<H2><?= $training['title_fr'] ?>
+			<H2><?= $training['sort'] ?> / <?= $training['title_fr'] ?>
 				<DIV class="btn-group">
 					<A href="?edit=<?= $idTraining ?>" class="btn btn-xs btn-primary"><i class="fas fa-pencil-alt"></i></A> 
 					<A href="?delete=<?= $idTraining ?>" class="btn btn-xs btn-danger _confirm" confirm="Êtes-vous certain de supprimer le training <?= $training['title_fr'] ?> ?"><i class="fas fa-trash"></i></A>

@@ -49,12 +49,17 @@ if (isset($_POST['save'])) {
 	if ($_POST['id'] == "") {
 		$mode = "create";
 		executeSql("
-			INSERT INTO combos (image_standby, image_action, image_transition_1, image_transition_2, image_transition_3, action_fr, response_fr) 
+			INSERT INTO combos 
+			(image_standby, image_action, image_transition_1, image_transition_2, image_transition_3, action_fr, response_fr, action_en, response_en, sort) 
 			VALUES ('" . $values['image_standby'] . "','" . $values['image_action'] . "'," .
 				($values['image_transition_1'] == "" ? "NULL" : "'".$values['image_transition_1']."'") . "," .
 				($values['image_transition_2'] == "" ? "NULL" : "'".$values['image_transition_2']."'") . "," .
 				($values['image_transition_3'] == "" ? "NULL" : "'".$values['image_transition_3']."'") . "," .
-				$db->quote($values['action_fr']) . "," . ($values['response_fr'] == "" ? "NULL" : $db->quote($values['response_fr'])) .
+				($values['action_fr'] == "" ? "NULL" : $db->quote($values['action_fr'])) . "," . 
+				($values['response_fr'] == "" ? "NULL" : $db->quote($values['response_fr'])) . "," .
+				($values['action_fr'] == "" ? "NULL" : $db->quote($values['action_en'])) . "," . 
+				($values['response_en'] == "" ? "NULL" : $db->quote($values['response_en'])) . "," .
+				($values['sort'] == "" ? "NULL" : $values['sort']) .
 				")");
 		$message = "Combo <i>".$values['action_fr']."</i> créé.";
 	} else {
@@ -66,8 +71,11 @@ if (isset($_POST['save'])) {
 				image_transition_1=" . ($values['image_transition_1'] == "" ? "NULL" : "'".$values['image_transition_1']."'") . ",
 				image_transition_2=" . ($values['image_transition_2'] == "" ? "NULL" : "'".$values['image_transition_2']."'") . ",
 				image_transition_3=" . ($values['image_transition_3'] == "" ? "NULL" : "'".$values['image_transition_3']."'") . ",
-				action_fr=" . $db->quote($values['action_fr']) . ",
-				response_fr=" . ($values['response_fr'] == "" ? "NULL" : $db->quote($values['response_fr'])) . "
+				action_fr=" . ($values['action_fr'] == "" ? "NULL" : $db->quote($values['action_fr'])) . ",
+				response_fr=" . ($values['response_fr'] == "" ? "NULL" : $db->quote($values['response_fr'])) . ",
+				action_en=" . ($values['action_en'] == "" ? "NULL" : $db->quote($values['action_en'])) . ",
+				response_en=" . ($values['response_en'] == "" ? "NULL" : $db->quote($values['response_en'])) . ",
+				sort=" . ($values['sort'] == "" ? "NULL" : $values['sort']) . "
 			WHERE id=".$values['id']);
 		$message = "Combo <i>".$values['action_fr']."</i> modifié.";
 	}
@@ -85,7 +93,10 @@ if (isset($_POST['save'])) {
 		'image_transition_3' => "",
 		'image_action' => "",
 		'action_fr' => "",
-		'response_fr' => ""
+		'response_fr' => "",
+		'action_en' => "",
+		'response_en' => "",
+		'sort' => "",
 	);
 } elseif (isset($_GET['delete'])) {
 	executeSql ("DELETE FROM combos WHERE id=".$_GET['delete']);
@@ -94,7 +105,7 @@ if (isset($_POST['save'])) {
 /*
 	Get Combos
 */
-$rows = executeSql("SELECT * FROM combos ORDER BY action_fr");
+$rows = executeSql("SELECT * FROM combos ORDER BY IFNULL(sort,999999), image_action");
 $combos = array();
 $defaultIndex = "";
 while ($row = $rows->fetch()) {
@@ -159,7 +170,7 @@ function optionsImage($imageSelected) {
 					</DIV>
 					<DIV class="card-body">
 						<DIV class="row">
-							<DIV class="col-sm-6">
+							<DIV class="col-lg-6">
 								<DIV class="row">
 									<DIV class="col-sm-12 col-md-4 col-lg-3">
 										<IMG src="<?= IMAGES_FOLDER."/".$values['image_standby'] ?>" class="img-fluid img-preview">
@@ -221,15 +232,27 @@ function optionsImage($imageSelected) {
 									</DIV>
 								</DIV>
 							</DIV>
-							<DIV class="col-sm-6">
+							<DIV class="col-lg-6">
 								<DIV class="form-group">
-									<LABEL for="action_fr" class="required">Description attaque</LABEL>
-									<INPUT type="text" name="action_fr" class="form-control" required value="<?= $values['action_fr'] ?>">
+									<LABEL for="action_fr" class="required">Description de l'attaque</LABEL>
+									<INPUT type="text" name="action_fr" class="form-control" required value="<?= $values['action_fr'] ?>" placeholder="Français">
 									<small class="form-text text-muted">Le premier mot détermine le classement.</small>
 								</DIV>
 								<DIV class="form-group">
-									<LABEL for="action_fr">Description défense</LABEL>
-									<INPUT type="text" name="response_fr" class="form-control" value="<?= $values['response_fr'] ?>">
+									<LABEL for="response_fr">Description de la défense</LABEL>
+									<INPUT type="text" name="response_fr" class="form-control" value="<?= $values['response_fr'] ?>" placeholder="Français">
+								</DIV>
+								<DIV class="form-group">
+									<LABEL for="action_en" class="required">Attack's description</LABEL>
+									<INPUT type="text" name="action_en" class="form-control" value="<?= $values['action_en'] ?>" placeholder="English">
+								</DIV>
+								<DIV class="form-group">
+									<LABEL for="response_en">Defense's description</LABEL>
+									<INPUT type="text" name="response_en" class="form-control" value="<?= $values['response_en'] ?>" placeholder="English">
+								</DIV>
+								<DIV class="form-group">
+									<LABEL for="sort">Tri</LABEL>
+									<INPUT type="number" name="sort" class="form-control" value="<?= $values['sort'] ?>" placeholder="999" style="width:100px;">
 								</DIV>
 							</DIV>
 						</DIV>
@@ -259,6 +282,7 @@ function optionsImage($imageSelected) {
 					<TABLE class="table">
 						<THEAD>
 							<TR>
+								<TH>Tri</TH>
 								<TH>Pause</TH>
 								<TH colspan="3">Transition</TH>
 								<TH>Final</TH>
@@ -269,6 +293,7 @@ function optionsImage($imageSelected) {
 						</THEAD>
 						<?php foreach ($combos[$indexActive] as $idCombo=>$combo) { ?>
 						<TR>
+							<TD><?= $combo['sort'] ?></TD>
 							<TD style="background-image: url('<?= IMAGES_FOLDER."/".$combo['image_standby'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>
 							<TD style="background-image: url('<?= IMAGES_FOLDER."/".$combo['image_transition_1'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>
 							<TD style="background-image: url('<?= IMAGES_FOLDER."/".$combo['image_transition_2'] ?>'); background-size: cover; background-position:center center;" width="20" /></TD>

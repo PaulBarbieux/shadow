@@ -9,7 +9,10 @@ if (isset($_GET['id'])) {
 	$idTraining = $_GET['id'];
 	$lg = $_GET['lg'];
 	$checked = isset($_GET['checked']);
-	$rows = executeSql ("SELECT * FROM combos, training_combos WHERE training_id='".$idTraining."' AND combo_id=id");
+	$rows = executeSql ("
+		SELECT * FROM combos C, training_combos T 
+		WHERE training_id='".$idTraining."' AND combo_id=id 
+		ORDER BY IFNULL(T.sort,999999), IFNULL(C.sort, 999999), C.image_action");
 	$trainingCombos = array();
 	while ($row = $rows->fetch()) {
 		$trainingCombos[$row['id']] = $row;
