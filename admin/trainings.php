@@ -47,37 +47,40 @@ if (isset($_POST['saveSort'])) {
 	$values = $_POST;
 	if ($_POST['mode'] == "create") {
 		executeSql("
-			INSERT INTO trainings (id, title_fr, title_en, sort) 
+			INSERT INTO trainings (title_fr, title_en, sort) 
 			VALUES (".
-				$db->quote($values['id'])  ."," .
 				($values['title_fr'] == "" ? "NULL" : $db->quote($values['title_fr'])) . "," .
 				($values['title_en'] == "" ? "NULL" : $db->quote($values['title_en'])) . "," .
 				($values['sort'] == "" ? "NULL" : $values['sort']) .
 				")");
-		$message = "Training ".$values['id']." créé.";
+		$sql = executeSql ("SELECT seq FROM sqlite_sequence WHERE name='trainings'");
+		$row = $sql->fetch();
+		$idTraining = $row[0];
+		$message = "Entraînement ".$values['title_fr']." créé.";
 	} else {
+		$idTraining = $values['id'];
 		executeSql("
 			UPDATE trainings SET 
-				id=". $db->quote($values['id']) . ",
 				title_fr=" . ($values['title_fr'] == "" ? "NULL" : $db->quote($values['title_fr'])). ",
 				title_en=" . ($values['title_en'] == "" ? "NULL" : $db->quote($values['title_en'])). ",
 				sort=" . ($values['sort'] == "" ? "NULL" : $values['sort']) . "
-				WHERE id=" . $db->quote($values['id_old']));
-		executeSql("DELETE FROM training_combos WHERE training_id='".$values['id_old']."'");
-		$message = "Training ".$values['id']." modifié.";
+				WHERE id=" . $idTraining);
+		executeSql("DELETE FROM training_combos WHERE training_id='".$idTraining."'");
+		$message = "Entraînement ".$values['title_fr']." modifié.";
 	}
 	foreach ($values['combo'] as $idCombo) {
-		executeSql("INSERT INTO training_combos (training_id, combo_id) VALUES ('".$values['id']."',".$idCombo.")");
+		executeSql("INSERT INTO training_combos (training_id, combo_id) VALUES (".$idTraining.",".$idCombo.")");
 	}
 } elseif (isset($_GET['edit'])) {
 	/*
 		Edit training
 	*/
 	$edit = true;
-	$row = executeSql("SELECT * FROM trainings WHERE id='".$_GET['edit']."'");
+	$idTraining = $_GET['edit'];
+	$row = executeSql("SELECT * FROM trainings WHERE id=".$idTraining);
 	$values = $row->fetch();
 	$values['combos'] = array();
-	$rows = executeSql("SELECT * FROM training_combos WHERE training_id='".$_GET['edit']."'");
+	$rows = executeSql("SELECT * FROM training_combos WHERE training_id=".$idTraining);
 	while ($row = $rows->fetch()) {
 		$values['combos'][$row['combo_id']] = $row['combo_id'];
 	}
@@ -87,12 +90,12 @@ if (isset($_POST['saveSort'])) {
 	*/
 	$create = true;
 	$values = array(
-		'id' => "",
 		'title_fr' => "",
 		'title_en' => "",
 		'sort' => "",
 		'combos' => array()
 	);
+	$idTraining = "";
 } elseif (isset($_GET['delete'])) {
 	/*
 		Delete training
@@ -157,14 +160,10 @@ if (isset($_GET['sort'])) {
 			
 			<FORM method="post">
 				<INPUT type="hidden" name="mode" value="<?= $create ? "create" : "edit" ?>">
-				<INPUT type="hidden" name="id_old" value="<?= $values['id'] ?>">
+				<INPUT type="hidden" name="id" value="<?= $idTraining ?>">
 				<DIV class="row">
 					<DIV class="col-xl-3 col-lg-4 col-md-12">
 						<H2><?= ($create ? "Nouveau" : "Modifier") ?> training</H2>
-						<DIV class="form-group">
-							<LABEL for="id">Identifiant</LABEL>
-							<INPUT type="text" name="id" class="form-control" required value="<?= $values['id'] ?>" placeholder="Code identifiant (pas d'espace ni d'accent)">
-						</DIV>
 						<DIV class="form-group">
 							<LABEL for="title_fr">Titre</LABEL>
 							<INPUT type="text" name="title_fr" class="form-control" required placeholder="Français" value="<?= $values['title_fr'] ?>">
