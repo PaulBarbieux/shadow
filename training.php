@@ -57,6 +57,7 @@ while ($row = $rows->fetch()) {
 $action = "setup";
 $values = array(
 	'standby_wait' => 500,
+	'standby_random' => 0,
 	'defense_time' => 2000,
 	'training_type' => "random",
 	'attacks_qty' => 10,
@@ -215,10 +216,10 @@ function setValues($inputs) {
 							</DIV>
 						
 							<DIV class="col-sm-12 col-lg-6">
-								<LABEL for="standby_wait" class="col-form-label"><?php if (FR) { ?>Temps de pause<?php } else { ?>Break time<?php } ?></LABEL>
 								<DIV class="row">
-									<DIV class="col-sm-4">
-										<SELECT name="standby_wait" class="form-control">
+									<DIV class="col-sm-5">
+										<LABEL for="standby_wait" class="col-form-label"><?php if (FR) { ?>Temps de pause<?php } else { ?>Break time<?php } ?></LABEL>
+										<SELECT name="standby_wait" class="form-control" style="width:150px; ">
 											<OPTION value="0" <?php if ($values['standby_wait'] == 0) echo "selected" ?>>0 (<?php if (FR) { ?>aucun<?php } else { ?>none<?php } ?>)</OPTION>
 											<OPTION value="125" <?php if ($values['standby_wait'] == 125) echo "selected" ?>>125 ms</OPTION>
 											<OPTION value="250" <?php if ($values['standby_wait'] == 250) echo "selected" ?>>250 ms</OPTION>
@@ -226,11 +227,23 @@ function setValues($inputs) {
 											<OPTION value="1000" <?php if ($values['standby_wait'] == 1000) echo "selected" ?>>1 s</OPTION>
 											<OPTION value="2000" <?php if ($values['standby_wait'] == 2000) echo "selected" ?>>2 s</OPTION>
 										</SELECT>
+										<SMALL class="form-text text-muted">
+											<?php if (FR) { ?>Temps durant lequel l'agresseur est passif.<?php } else { ?>Time during which the aggressor is passive.<?php } ?>
+										</SMALL>
 									</DIV>
-									<SMALL class="form-text text-muted mt-0 mb-2 col-sm-8">
-										<?php if (FR) { ?>Temps durant lequel l'agresseur est passif.<?php } else { ?>Time during which the aggressor is passive.<?php } ?>
-									</SMALL>
-									
+									<DIV class="col-sm-6 offset-sm-1">
+										<LABEL for="standby_random" class="col-form-label"><?php if (FR) { ?>Facteur aléatoire supplémentaire<?php } else { ?>Random factor on break time<?php } ?></LABEL>
+										<SELECT name="standby_random" class="form-control" style="width:150px; ">
+											<OPTION value="0" <?php if ($values['standby_random'] == 0) echo "selected" ?>>0 (<?php if (FR) { ?>aucun<?php } else { ?>none<?php } ?>)</OPTION>
+											<OPTION value="1000" <?php if ($values['standby_random'] == 1000) echo "selected" ?>>1 s</OPTION>
+											<OPTION value="2000" <?php if ($values['standby_random'] == 2000) echo "selected" ?>>2 s</OPTION>
+											<OPTION value="3000" <?php if ($values['standby_random'] == 3000) echo "selected" ?>>3 s</OPTION>
+											<OPTION value="5000" <?php if ($values['standby_random'] == 5000) echo "selected" ?>>5 s</OPTION>
+										</SELECT>
+										<SMALL class="form-text text-muted">
+											<?php if (FR) { ?>Temps aléatoire ajouté à la pause.<?php } else { ?>Random time added to the break time.<?php } ?>
+										</SMALL>
+									</DIV>
 								</DIV>
 							</DIV>
 							
@@ -484,7 +497,8 @@ function checkCombo(checkbox) {
 </DIV>
 
 <INPUT type="hidden" id="CntCombos" value="<?= $iCombo ?>">
-<INPUT type="hidden" id="StandbyWait" value="<?= $values['standby_wait'] ?>">
+<INPUT type="hidden" id="StandMin" value="<?= $values['standby_wait'] ?>">
+<INPUT type="hidden" id="StandMax" value="<?= ($values['standby_wait'] + $values['standby_random']) ?>">
 <INPUT type="hidden" id="DefenseTime" value="<?= $values['defense_time'] ?>">
 <INPUT type="hidden" id="TrainingType" value="<?= $values['training_type'] ?>">
 <INPUT type="hidden" id="AttacksQty" value="<?= $values['attacks_qty'] ?>">
@@ -562,6 +576,10 @@ jQuery(document).ready(function(){
 			comboId = "#Combo_" + attackId;
 			// Show standby (background image in the DIV)
 			$(comboId).show();
+			// Compute waiting time	
+			standMin = parseInt($("#StandMin").val());
+			standMax = parseInt($("#StandMax").val());
+			standWait = Math.floor(Math.random() * (standMax - standMin)) + standMin;
 			// Show attack after some seconds (image in the DIV)
 			setTimeout(function() {
 				switch ($(comboId).attr('nb-transitions')) {
@@ -595,7 +613,7 @@ jQuery(document).ready(function(){
 				}
 				// Show next attack
 				idAttackTimeout = setTimeout(showAttack,defenseTime);
-			}, $("#StandbyWait").val());
+			}, standWait);
 		} else {
 			// End training
 			endTraining();
