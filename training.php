@@ -75,6 +75,7 @@ if (isset($_POST['start']) or isset($_POST['save'])) {
 		$action = "save";
 	}
 	$values = setValues($_POST);
+	$totalMvts = $_POST['total_mvts'];
 	if (count($values['combos']) == 0) {
 		$error = true;
 		$message =  FR ? "Veuillez choisir au moins un entraînement." : "Please select at least one training.";
@@ -90,13 +91,19 @@ if (isset($_POST['start']) or isset($_POST['save'])) {
 	$action = "training";
 	$rows = executeSql("SELECT parameters FROM presets WHERE id=".$_GET['preset']);
 	if ($row = $rows->fetch()) {
-		$values = setValues(unserialize($row['parameters']));
+		$values = array_merge( $values , setValues(unserialize($row['parameters'])) );
 	} else {
 		$error = true;
 		$message =  FR ? "Désolé : numéro d'enregistrement inconnu." : "Sorry : unknown record number.";
 		$action = "error";
 	}
+	$totalMvts = 0;
+} else {
+	// First time
+	$totalMvts = 0;
 }
+
+
 function setValues($inputs) {
 	$values = array('combos' => array());
 	foreach ($inputs as $input => $value) {
@@ -153,6 +160,7 @@ function setValues($inputs) {
 	<?php } ?>
 	<FORM method="post">
 		<INPUT type="hidden" id="Language" value="<?= LG ?>" />
+		<INPUT type="hidden" id="TotalMvts" name="total_mvts" value="<?= $totalMvts ?>" />
 		<DIV class="row">
 		
 			<DIV class="col-12">
@@ -235,6 +243,7 @@ function setValues($inputs) {
 										<LABEL for="standby_random" class="col-form-label"><?php if (FR) { ?>Facteur aléatoire supplémentaire<?php } else { ?>Random factor on break time<?php } ?></LABEL>
 										<SELECT name="standby_random" class="form-control" style="width:150px; ">
 											<OPTION value="0" <?php if ($values['standby_random'] == 0) echo "selected" ?>>0 (<?php if (FR) { ?>aucun<?php } else { ?>none<?php } ?>)</OPTION>
+											<OPTION value="500" <?php if ($values['standby_random'] == 500) echo "selected" ?>>0,5 s</OPTION>
 											<OPTION value="1000" <?php if ($values['standby_random'] == 1000) echo "selected" ?>>1 s</OPTION>
 											<OPTION value="2000" <?php if ($values['standby_random'] == 2000) echo "selected" ?>>2 s</OPTION>
 											<OPTION value="3000" <?php if ($values['standby_random'] == 3000) echo "selected" ?>>3 s</OPTION>
@@ -454,8 +463,12 @@ function checkCombo(checkbox) {
 
 <DIV id="ScreenTraining">
 	<DIV class="d-flex justify-content-center align-items-center">
-		<DIV class="countdown" id="Ready"><?php if (FR) { ?>Prêt ?<?php } else { ?>Ready ?<?php } ?></DIV>
+		<DIV class="countdown" id="Ready"><?php if (FR) { ?>Prêt ?<?php } else { ?>Ready ?<?php } ?><DIV class="text-center" id="uncount">3</DIV></DIV>
 		<DIV class="countdown" id="Go" style="display:none;"><?php if (FR) { ?>Défendez-vous !<?php } else { ?>Defend yourself !<?php } ?></DIV>
+		<DIV class="countdown" id="Bravo" style="display:none;" class="text-center">
+			<DIV class="text-center"><?php if (FR) { ?>Bravo<?php } else { ?>Congratulations !<?php } ?> !</DIV>
+			<DIV class="text-center"><SPAN id="BravoTotalMvts"></SPAN> <?php if (FR) { ?>mouvements<?php } else { ?>movements<?php } ?></DIV>
+		</DIV>
 		<?php
 		$iCombo = 0;
 		foreach ($values['combos'] as $idCombo) {
@@ -545,15 +558,21 @@ jQuery(document).ready(function(){
 			}
 		}
 	}
-	iAction = 0;
+	var showBravo = true; // No bravo if interruption
+	var iAction = 0;
+	var uncount = setInterval(function(){
+		cnt = $("#uncount").html() - 1;
+		$("#uncount").html(cnt);
+	},1000);
 	setTimeout(function(){
 		$("#Ready").hide();
 		$("#Go").show();
 		setTimeout(function(){
 			$("#Go").hide();
+			clearInterval(uncount);
 			showAttack();
 		},1000);
-	},1000);
+	},3000);
 	
 	function showAttack() {
 		// Hide combos and attack image inside
@@ -630,19 +649,32 @@ jQuery(document).ready(function(){
 	*/
 	$(document).keypress(function(e){
 		if (e.which == 32) {
+			showBravo = false;
 			endTraining();
 		}
 	});
 	$(".combo").click(function() {
+		showBravo = false;
 		endTraining();
 	});
 	function endTraining() {
 		if (typeof idAttackTimeout != 'undefined') {
 			clearTimeout(idAttackTimeout);
 		}
-		$("BODY").removeClass("training");
-		$("#ScreenTraining").hide();
-		$("#ScreenSetup").slideDown(500);
+		totalMvts = parseInt($('#TotalMvts').val()) + iAction -1;
+		$('#TotalMvts').val(totalMvts);
+		if (showBravo) {
+			$('#BravoTotalMvts').html(totalMvts);
+			$("#Bravo").show();
+			waitClose = 1000;
+		} else {
+			waitClose = 0;
+		}
+		setTimeout(function(){
+			$("BODY").removeClass("training");
+			$("#ScreenTraining").hide();
+			$("#ScreenSetup").slideDown(500);
+		}, waitClose);
 	}
 	
 });
